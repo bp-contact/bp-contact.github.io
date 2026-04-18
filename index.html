@@ -2,46 +2,49 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BP-Contact | BlocPlay</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BP-Contact</title>
     <style>
-        /* --- DESIGN GLOBAL & DARK MODE --- */
         :root {
             --sidebar-bg: #2f3136;
             --chat-bg: #36393f;
-            --header-bg: #36393f;
-            --text-color: #dcddde;
-            --accent-color: #5865f2; /* Bleu Blurple */
-            --input-bg: #40444b;
+            --accent: #5865f2;
+            --text: #dcddde;
+            --input: #40444b;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            background-color: var(--chat-bg);
-            color: var(--text-color);
-            display: flex;
+            margin: 0; padding: 0;
+            height: 100%; width: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--chat-bg);
+            color: var(--text);
+            overflow: hidden;
         }
 
-        /* --- BARRE LATÉRALE (CONTACTS) --- */
+        .app-container {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+
+        /* --- SIDEBAR (Contacts) --- */
         .sidebar {
             width: 300px;
-            background-color: var(--sidebar-bg);
+            background: var(--sidebar-bg);
             display: flex;
             flex-direction: column;
-            border-right: 1px solid #202225;
+            transition: all 0.3s ease;
+            z-index: 10;
         }
 
         .sidebar-header {
-            padding: 20px;
-            font-size: 18px;
+            padding: 15px;
             font-weight: bold;
+            font-size: 1.2rem;
             border-bottom: 1px solid #202225;
-            color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -56,48 +59,57 @@
         .contact-item {
             display: flex;
             align-items: center;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
             margin-bottom: 5px;
+            cursor: pointer;
         }
 
         .contact-item:hover { background: #393c43; }
-        .contact-item.active { background: #4f545c; color: white; }
+        .contact-item.active { background: #4f545c; }
 
         .avatar {
-            width: 40px;
-            height: 40px;
-            background: var(--accent-color);
+            width: 40px; height: 40px;
             border-radius: 50%;
+            background: var(--accent);
             margin-right: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            color: white;
+            font-weight: bold; color: white;
         }
 
-        /* --- ZONE DE CHAT PRINCIPALE --- */
+        /* --- CHAT AREA --- */
         .main-chat {
             flex: 1;
             display: flex;
             flex-direction: column;
+            background: var(--chat-bg);
+            position: relative;
         }
 
         .chat-header {
             height: 60px;
-            background: var(--header-bg);
+            padding: 0 15px;
             display: flex;
             align-items: center;
-            padding: 0 20px;
+            background: var(--chat-bg);
             border-bottom: 1px solid #202225;
-            font-weight: bold;
-            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .messages-container {
+        /* Bouton Retour Mobile */
+        .back-btn {
+            display: none;
+            margin-right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .messages {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
@@ -106,160 +118,169 @@
             gap: 15px;
         }
 
-        .msg-group {
+        .message-row {
             display: flex;
-            gap: 15px;
-        }
-
-        .msg-content {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .msg-author {
-            font-weight: bold;
-            color: white;
-            font-size: 14px;
-            margin-bottom: 4px;
+            gap: 12px;
         }
 
         .msg-text {
+            background: #40444b;
+            padding: 10px 14px;
+            border-radius: 15px;
+            max-width: 85%;
             font-size: 15px;
-            line-height: 1.3;
+            line-height: 1.4;
         }
 
-        /* --- BARRE DE SAISIE --- */
-        .input-area {
-            padding: 20px;
+        /* INPUT AREA */
+        .input-box {
+            padding: 15px;
             background: var(--chat-bg);
         }
 
-        .input-wrapper {
-            background: var(--input-bg);
-            border-radius: 8px;
+        .input-inner {
+            background: var(--input);
             padding: 10px 15px;
+            border-radius: 25px;
             display: flex;
             align-items: center;
         }
 
         input {
-            background: transparent;
-            border: none;
-            color: var(--text-color);
-            flex: 1;
-            font-size: 16px;
-            outline: none;
+            background: none; border: none; color: white;
+            flex: 1; font-size: 16px; outline: none;
         }
 
-        .btn-bp {
-            background: #f1c40f;
+        .send-btn {
+            background: var(--accent);
+            border: none; color: white;
+            width: 35px; height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        /* --- RESPONSIVE MOBILE --- */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                left: 0;
+            }
+
+            .sidebar.hidden {
+                left: -100%;
+            }
+
+            .back-btn {
+                display: block;
+            }
+        }
+
+        .login-btn {
+            background: #ffcc00;
             color: black;
             border: none;
             padding: 5px 10px;
-            border-radius: 4px;
+            border-radius: 5px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
-            margin-right: 10px;
         }
-
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            BlocPlay 
-            <button class="btn-bp" onclick="login()">Connexion</button>
-        </div>
-        <div class="contact-list" id="contactList">
-            <div class="contact-item active" onclick="changeContact('Général', 'G')">
-                <div class="avatar">G</div>
-                <span>Flux Global</span>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span>BlocPlay</span>
+                <button class="login-btn" onclick="login()">LOGIN</button>
             </div>
-            <div class="contact-item" onclick="changeContact('Alex88', 'A')">
-                <div class="avatar" style="background:#e67e22">A</div>
-                <span>Alex88</span>
-            </div>
-            <div class="contact-item" onclick="changeContact('Zelda_Fan', 'Z')">
-                <div class="avatar" style="background:#2ecc71">Z</div>
-                <span>Zelda_Fan</span>
-            </div>
-        </div>
-    </aside>
-
-    <main class="main-chat">
-        <header class="chat-header">
-            <span id="currentContact"># Flux Global</span>
-        </header>
-
-        <div class="messages-container" id="chat">
-            <div class="msg-group">
-                <div class="avatar">BP</div>
-                <div class="msg-content">
-                    <span class="msg-author">Système BlocPlay</span>
-                    <span class="msg-text">Bienvenue sur BP-Contact. Cliquez sur un contact à gauche pour démarrer une discussion privée.</span>
+            <div class="contact-list">
+                <div class="contact-item active" onclick="openChat('Flux Global', 'G')">
+                    <div class="avatar">G</div>
+                    <span>Flux Global</span>
+                </div>
+                <div class="contact-item" onclick="openChat('Alex88', 'A')">
+                    <div class="avatar" style="background:orange">A</div>
+                    <span>Alex88</span>
+                </div>
+                <div class="contact-item" onclick="openChat('Zelda_Fan', 'Z')">
+                    <div class="avatar" style="background:green">Z</div>
+                    <span>Zelda_Fan</span>
                 </div>
             </div>
-        </div>
+        </aside>
 
-        <footer class="input-area">
-            <div class="input-wrapper">
-                <input type="text" id="userInput" placeholder="Envoyer un message...">
+        <main class="main-chat">
+            <header class="chat-header">
+                <button class="back-btn" onclick="toggleSidebar()">☰</button>
+                <strong id="chatName"># Flux Global</strong>
+            </header>
+
+            <div class="messages" id="messageList">
+                <div class="message-row">
+                    <div class="avatar">BP</div>
+                    <div class="msg-text">Bienvenue sur BP-Contact. Sélectionnez un contact pour discuter.</div>
+                </div>
             </div>
-        </footer>
-    </main>
+
+            <div class="input-box">
+                <div class="input-inner">
+                    <input type="text" id="userInput" placeholder="Message...">
+                    <button class="send-btn" onclick="send()">➤</button>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script>
-        const chat = document.getElementById('chat');
+        const sidebar = document.getElementById('sidebar');
+        const chatName = document.getElementById('chatName');
+        const messageList = document.getElementById('messageList');
         const userInput = document.getElementById('userInput');
-        const contactTitle = document.getElementById('currentContact');
-        let currentUser = "Invité";
+        let myName = "Invité";
 
         function login() {
-            const val = prompt("Pseudo BlocPlay :");
-            if(val) currentUser = val;
+            let p = prompt("Pseudo BlocPlay :");
+            if(p) myName = p;
         }
 
-        function changeContact(name, initial) {
-            // Change le titre
-            contactTitle.innerText = `# ${name}`;
+        function toggleSidebar() {
+            sidebar.classList.toggle('hidden');
+        }
+
+        function openChat(name, initial) {
+            chatName.innerText = "# " + name;
+            messageList.innerHTML = `<div class="message-row"><div class="avatar">${initial}</div><div class="msg-text">C'est le début de votre conversation avec ${name}.</div></div>`;
             
-            // On vide le chat pour simuler le changement de salon
-            chat.innerHTML = `<div class="msg-group">
-                <div class="avatar">${initial}</div>
-                <div class="msg-content">
-                    <span class="msg-author">${name}</span>
-                    <span class="msg-text">Début de votre historique avec ${name}.</span>
-                </div>
-            </div>`;
-
-            // Style visuel
-            document.querySelectorAll('.contact-item').forEach(item => {
-                item.classList.remove('active');
-                if(item.innerText.includes(name)) item.classList.add('active');
-            });
-        }
-
-        function sendMessage() {
-            const text = userInput.value;
-            if (text.trim() !== "") {
-                const html = `
-                <div class="msg-group">
-                    <div class="avatar" style="background:#5865f2">${currentUser[0].toUpperCase()}</div>
-                    <div class="msg-content">
-                        <span class="msg-author">${currentUser}</span>
-                        <span class="msg-text">${text}</span>
-                    </div>
-                </div>`;
-                chat.innerHTML += html;
-                userInput.value = "";
-                chat.scrollTop = chat.scrollHeight;
+            // Sur mobile, on cache la sidebar quand on choisit un contact
+            if(window.innerWidth <= 768) {
+                sidebar.classList.add('hidden');
             }
         }
 
-        userInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") sendMessage();
-        });
+        function send() {
+            if(userInput.value.trim() == "") return;
+            
+            let html = `
+                <div class="message-row" style="justify-content: flex-end;">
+                    <div class="msg-text" style="background:var(--accent);">${userInput.value}</div>
+                </div>
+            `;
+            messageList.innerHTML += html;
+            userInput.value = "";
+            messageList.scrollTop = messageList.scrollHeight;
+        }
+
+        userInput.addEventListener("keypress", (e) => { if(e.key === "Enter") send(); });
+
+        // Initialisation mobile
+        if(window.innerWidth <= 768) {
+            sidebar.classList.add('hidden');
+        }
     </script>
 </body>
 </html>
