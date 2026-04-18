@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BP-Contact | Mode Barre de Contacts</title>
+    <title>BP-Contact | Système de Demandes</title>
     <style>
         :root {
             --bg-contacts: #1e1f22;
@@ -13,6 +13,7 @@
             --text-main: #dbdee1;
             --accent: #5865f2;
             --online: #23a559;
+            --pending: #f0b232;
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
@@ -20,79 +21,59 @@
 
         .app-container { display: flex; height: 100vh; width: 100vw; }
 
-        /* 1. BARRE DE CONTACTS (STYLE SERVEURS DISCORD) */
-        .contacts-bar {
-            width: 72px;
-            background: var(--bg-contacts);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 12px;
-            gap: 12px;
-            flex-shrink: 0;
-            overflow-y: auto;
+        /* BARRE DE GAUCHE */
+        .contacts-bar { width: 72px; background: var(--bg-contacts); display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 12px; flex-shrink: 0; overflow-y: auto; }
+        
+        .contact-circle { 
+            width: 48px; height: 48px; background: var(--bg-chat); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: 0.2s; font-weight: bold; color: white; position: relative; 
+        }
+        .contact-circle:hover, .contact-circle.active { border-radius: 30%; background: var(--accent); }
+        
+        /* Bulle de notification pour les demandes en attente */
+        .badge { 
+            position: absolute; top: -2px; right: -2px; width: 20px; height: 20px; 
+            background: #ed4245; border-radius: 50%; border: 3px solid var(--bg-contacts);
+            font-size: 10px; display: flex; align-items: center; justify-content: center;
         }
 
-        /* Icône de contact ronde */
-        .contact-circle {
-            width: 48px; height: 48px;
-            background: var(--bg-chat);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s;
-            font-weight: bold; color: white;
-            position: relative;
-        }
-
-        .contact-circle:hover, .contact-circle.active {
-            border-radius: 30%;
-            background: var(--accent);
-        }
-
-        /* Indicateur en ligne */
-        .status-dot {
-            position: absolute; bottom: 2px; right: 2px;
-            width: 14px; height: 14px;
-            background: var(--online);
-            border: 3px solid var(--bg-contacts);
-            border-radius: 50%;
-        }
-
-        .add-btn { background: var(--bg-chat); color: var(--online); font-size: 24px; border-radius: 50%; }
-        .add-btn:hover { background: var(--online); color: white; border-radius: 30%; }
+        .add-btn { color: var(--online); font-size: 24px; border: 2px dashed #35363c; }
+        .add-btn:hover { border-style: solid; background: var(--online); color: white; }
 
         .separator { width: 32px; height: 2px; background: #35363c; }
 
-        /* 2. SIDEBAR INFO */
-        .sidebar-info {
-            width: 240px;
-            background: var(--bg-sidebar);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-        .sidebar-header { height: 48px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; }
+        /* SIDEBAR MILIEU */
+        .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid #1e1f22; }
+        .sidebar-header { height: 48px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+        .info-content { padding: 20px; }
 
-        /* 3. ZONE CHAT */
+        /* ZONE CHAT */
         .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); min-width: 0; }
         .chat-header { height: 48px; padding: 0 16px; display: flex; align-items: center; border-bottom: 1px solid #282a2e; font-weight: bold; }
         #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         
-        .msg { display: flex; gap: 15px; margin-bottom: 5px; }
-        .msg-text-content { display: flex; flex-direction: column; }
+        .msg { display: flex; gap: 15px; margin-bottom: 8px; }
         .msg-user { font-weight: bold; color: white; font-size: 14px; }
-        .msg-val { color: var(--text-main); font-size: 15px; }
+        .msg-val { color: var(--text-main); font-size: 15px; margin-top: 2px; }
 
         .input-box { padding: 0 16px 24px; }
         .input-wrap { background: var(--bg-input); border-radius: 8px; padding: 12px; }
         input { background: transparent; border: none; color: white; width: 100%; outline: none; }
 
-        /* OVERLAYS */
-        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center; }
-        .card { background: var(--bg-sidebar); padding: 30px; border-radius: 8px; width: 350px; text-align: center; }
-        .card input { width: 100%; padding: 10px; background: #1e1f22; border: none; border-radius: 4px; color: white; margin: 10px 0; }
-        .btn { width: 100%; padding: 10px; background: var(--accent); border: none; color: white; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        /* MODAL */
+        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .card { background: var(--bg-sidebar); padding: 30px; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        .card input { width: 100%; padding: 12px; background: #1e1f22; border: none; border-radius: 4px; color: white; margin: 15px 0; }
+        .btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; cursor: pointer; border-radius: 4px; font-weight: bold; transition: 0.2s; }
+        .btn:hover { background: #4752c4; }
+        
         .hidden { display: none !important; }
+
+        /* Style spécifique pour la liste des demandes */
+        .request-item { background: #383a40; padding: 10px; border-radius: 4px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .request-actions { display: flex; gap: 5px; }
+        .btn-small { flex: 1; padding: 5px; font-size: 12px; border-radius: 3px; border: none; cursor: pointer; color: white; }
     </style>
 </head>
 <body>
@@ -100,7 +81,7 @@
     <div id="loginOverlay" class="overlay">
         <div class="card">
             <h2>BlocPlay Contact</h2>
-            <input type="email" id="email" placeholder="Email">
+            <input type="email" id="email" placeholder="Email BlocPlay">
             <input type="password" id="pass" placeholder="Mot de passe">
             <button class="btn" id="loginBtn">Se connecter</button>
         </div>
@@ -108,10 +89,11 @@
 
     <div id="addModal" class="overlay hidden">
         <div class="card">
-            <h3>Ajouter un contact</h3>
-            <input type="email" id="friendEmail" placeholder="Email de l'ami">
-            <button class="btn" id="confirmAdd">Ajouter</button>
-            <button class="btn" style="background:#4e5058; margin-top:5px;" onclick="document.getElementById('addModal').classList.add('hidden')">Annuler</button>
+            <h3>Envoyer une demande</h3>
+            <p style="font-size:13px; color:var(--text-muted);">L'utilisateur devra accepter votre invitation.</p>
+            <input type="email" id="friendEmail" placeholder="Email exact de l'utilisateur">
+            <button class="btn" id="confirmAdd">Envoyer l'invitation</button>
+            <button class="btn" style="background:#4e5058; margin-top:8px;" onclick="document.getElementById('addModal').classList.add('hidden')">Annuler</button>
         </div>
     </div>
 
@@ -122,21 +104,28 @@
             
             <div id="contactsIconsList" style="display:contents;"></div>
 
-            <div class="contact-circle add-btn" onclick="document.getElementById('addModal').classList.remove('hidden')">+</div>
+            <div class="contact-circle add-btn" onclick="document.getElementById('addModal').classList.remove('hidden')" title="Ajouter un ami">+</div>
         </nav>
 
         <aside class="sidebar-info">
-            <div class="sidebar-header">Infos Contact</div>
-            <div id="contactDetails" style="padding:20px; font-size:14px; color:var(--text-muted);">
-                Sélectionnez un ami à gauche pour commencer à parler.
+            <div class="sidebar-header">Demandes & Infos</div>
+            <div class="info-content" id="sidebarContent">
+                <div id="pendingRequests">
+                    <h4 style="font-size:12px; text-transform:uppercase; color:gray; margin-bottom:10px;">Demandes en attente</h4>
+                    <div id="requestsList">Aucune demande</div>
+                </div>
+                <hr style="border:0; border-top:1px solid #35363c; margin:20px 0;">
+                <div id="activeContactDetails">
+                    <p style="font-size:14px; color:gray;">Sélectionnez un contact à gauche.</p>
+                </div>
             </div>
-            <div style="margin-top:auto; padding:10px;">
-                <button onclick="auth.signOut()" style="background:none; border:none; color:gray; cursor:pointer;">Déconnexion</button>
+            <div style="margin-top:auto; padding:15px; border-top:1px solid #232428;">
+                <button onclick="auth.signOut()" style="background:none; border:none; color:#ed4245; cursor:pointer; font-size:12px;">Déconnexion</button>
             </div>
         </aside>
 
         <main class="chat-area">
-            <header class="chat-header" id="chatTitle"># Message Privé</header>
+            <header class="chat-header" id="chatTitle"># Sélectionnez un ami</header>
             <div id="messages"></div>
             <div class="input-box">
                 <div class="input-wrap">
@@ -148,7 +137,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, onChildAdded, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -170,36 +159,81 @@
 
         // --- AUTH ---
         document.getElementById('loginBtn').onclick = () => {
-            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
+            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value)
+                .catch(err => alert("Identifiants incorrects"));
         };
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 document.getElementById('loginOverlay').classList.add('hidden');
-                // On enregistre l'utilisateur
                 set(ref(db, 'users/' + user.uid), { uid: user.uid, email: user.email, name: user.email.split('@')[0] });
                 loadContacts();
-            } else {
-                document.getElementById('loginOverlay').classList.remove('hidden');
-            }
+                loadRequests();
+            } else { location.reload(); }
         });
 
-        // --- AJOUTER UN AMI PAR EMAIL ---
+        // --- ENVOYER UNE DEMANDE ---
         document.getElementById('confirmAdd').onclick = async () => {
-            const email = document.getElementById('friendEmail').value;
-            const usersRef = ref(db, 'users');
-            const q = query(usersRef, orderByChild('email'), equalTo(email));
+            const email = document.getElementById('friendEmail').value.trim();
+            if (email === currentUser.email) return alert("Vous ne pouvez pas vous ajouter vous-même !");
+
+            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
             const snap = await get(q);
 
             if (snap.exists()) {
                 const friendData = Object.values(snap.val())[0];
-                await set(ref(db, `contacts/${currentUser.uid}/${friendData.uid}`), friendData);
+                // On place la demande chez le destinataire
+                await set(ref(db, `requests/${friendData.uid}/${currentUser.uid}`), {
+                    fromUid: currentUser.uid,
+                    fromName: currentUser.email.split('@')[0],
+                    fromEmail: currentUser.email
+                });
+                alert("Demande envoyée !");
                 document.getElementById('addModal').classList.add('hidden');
-            } else { alert("Utilisateur introuvable"); }
+            } else { alert("Utilisateur introuvable."); }
         };
 
-        // --- CHARGER LES ICONES (La barre à gauche) ---
+        // --- CHARGER LES DEMANDES REÇUES ---
+        function loadRequests() {
+            onValue(ref(db, `requests/${currentUser.uid}`), (snap) => {
+                const list = document.getElementById('requestsList');
+                list.innerHTML = snap.exists() ? "" : "Aucune demande";
+                
+                snap.forEach(child => {
+                    const req = child.val();
+                    const div = document.createElement('div');
+                    div.className = "request-item";
+                    div.innerHTML = `
+                        <span style="font-size:13px;"><strong>${req.fromName}</strong> veut vous parler.</span>
+                        <div class="request-actions">
+                            <button class="btn-small" style="background:var(--online)" onclick="acceptFriend('${req.fromUid}', '${req.fromName}', '${req.fromEmail}')">Accepter</button>
+                            <button class="btn-small" style="background:#ed4245" onclick="refuseFriend('${req.fromUid}')">Refuser</button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            });
+        }
+
+        // --- ACCEPTER / REFUSER ---
+        window.acceptFriend = async (uid, name, email) => {
+            // 1. Ajouter aux contacts des deux côtés
+            await set(ref(db, `contacts/${currentUser.uid}/${uid}`), { uid, name, email });
+            await set(ref(db, `contacts/${uid}/${currentUser.uid}`), { 
+                uid: currentUser.uid, 
+                name: currentUser.email.split('@')[0], 
+                email: currentUser.email 
+            });
+            // 2. Supprimer la demande
+            await remove(ref(db, `requests/${currentUser.uid}/${uid}`));
+        };
+
+        window.refuseFriend = async (uid) => {
+            await remove(ref(db, `requests/${currentUser.uid}/${uid}`));
+        };
+
+        // --- CHARGER LES ICONES DE CONTACTS ---
         function loadContacts() {
             onValue(ref(db, `contacts/${currentUser.uid}`), (snap) => {
                 const list = document.getElementById('contactsIconsList');
@@ -209,42 +243,34 @@
                     const icon = document.createElement('div');
                     icon.className = "contact-circle";
                     icon.innerText = friend.name[0].toUpperCase();
-                    icon.title = friend.name;
                     icon.onclick = () => openChat(friend);
                     list.appendChild(icon);
                 });
             });
         }
 
-        // --- OUVRIR LE CHAT ---
+        // --- CHAT ---
         function openChat(friend) {
             const ids = [currentUser.uid, friend.uid].sort();
             activeChatId = ids[0] + "_" + ids[1];
-            
             document.getElementById('chatTitle').innerText = "@ " + friend.name;
             document.getElementById('userInput').disabled = false;
-            document.getElementById('contactDetails').innerHTML = `<strong>Nom:</strong> ${friend.name}<br><strong>Email:</strong> ${friend.email}`;
+            document.getElementById('activeContactDetails').innerHTML = `<strong>Ami :</strong> ${friend.name}<br><span style="font-size:12px;color:gray;">${friend.email}</span>`;
             
             const msgDiv = document.getElementById('messages');
-            msgDiv.innerHTML = "";
             onValue(ref(db, 'chats/' + activeChatId), (snap) => {
                 msgDiv.innerHTML = "";
                 snap.forEach(m => {
-                    const data = m.val();
-                    msgDiv.innerHTML += `<div class="msg"><div class="msg-text-content"><span class="msg-user">${data.author}</span><span class="msg-val">${data.text}</span></div></div>`;
+                    const d = m.val();
+                    msgDiv.innerHTML += `<div class="msg"><div class="msg-text-content"><span class="msg-user">${d.author}</span><div class="msg-val">${d.text}</div></div></div>`;
                 });
                 msgDiv.scrollTop = msgDiv.scrollHeight;
             });
         }
 
-        // --- ENVOI ---
         document.getElementById('userInput').onkeydown = (e) => {
             if(e.key === "Enter" && e.target.value.trim()) {
-                push(ref(db, 'chats/' + activeChatId), {
-                    author: currentUser.email.split('@')[0],
-                    text: e.target.value,
-                    time: Date.now()
-                });
+                push(ref(db, 'chats/' + activeChatId), { author: currentUser.email.split('@')[0], text: e.target.value });
                 e.target.value = "";
             }
         };
