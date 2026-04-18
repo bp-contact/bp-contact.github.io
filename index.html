@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BP-Contact | Connexion BlocPlay</title>
-    
+    <title>BP-Contact | Sécurisé</title>
     <style>
         :root {
             --bg-servers: #1e1f22;
@@ -16,145 +15,71 @@
             --danger: #ed4245;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-servers); color: var(--text-main); overflow: hidden; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-servers); color: var(--text-main); overflow: hidden; }
 
         .app-container { display: flex; height: 100vh; width: 100vw; }
 
-        /* --- SIDEBAR SERVEURS (STYLE DISCORD) --- */
-        .server-sidebar {
-            width: 72px;
-            background-color: var(--bg-servers);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 12px;
-            gap: 8px;
-            flex-shrink: 0;
-        }
+        /* SIDEBAR */
+        .sidebar { width: 260px; background: var(--bg-channels); display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { height: 48px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; }
+        .user-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .user-item { display: flex; align-items: center; padding: 10px; border-radius: 4px; cursor: pointer; margin-bottom: 4px; transition: 0.2s; }
+        .user-item:hover { background: #35373c; }
+        .user-item.active { background: #3f4147; color: white; }
+        .avatar { width: 35px; height: 35px; border-radius: 50%; background: var(--accent); margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; flex-shrink: 0; }
 
-        .server-icon {
-            width: 48px; height: 48px;
-            background-color: var(--bg-chat);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s;
-            font-weight: bold; font-size: 14px;
-            color: white;
-            text-decoration: none;
-        }
+        /* CHAT */
+        .chat-main { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); min-width: 0; }
+        .chat-header { height: 48px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #282a2e; }
+        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
 
-        .server-icon:hover, .server-icon.active {
-            border-radius: 30%;
-            background-color: var(--accent);
-        }
-
-        .separator { width: 32px; height: 2px; background: #35363c; margin: 4px 0; }
-
-        /* --- CHAT --- */
-        .chat-container { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-chat); position: relative; }
-
-        .chat-header {
-            height: 48px; padding: 0 16px;
-            display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            font-weight: bold; font-size: 15px;
-            background: var(--bg-chat);
-        }
-
-        #messageList { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-
-        /* Message design */
-        .message { display: flex; gap: 16px; }
-        .avatar-circle { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; color: white; }
-        .msg-info { display: flex; flex-direction: column; }
-        .msg-user { font-weight: bold; color: white; margin-right: 8px; }
-        .msg-time { font-size: 12px; color: #949ba4; }
-        .msg-text { font-size: 15px; color: #dbdee1; margin-top: 2px; line-height: 1.4; }
+        .msg { display: flex; gap: 15px; }
+        .msg-body { display: flex; flex-direction: column; }
+        .msg-user { font-weight: bold; font-size: 14px; color: white; }
+        .msg-text { font-size: 15px; color: #dbdee1; margin-top: 2px; }
 
         .input-area { padding: 0 16px 24px 16px; }
-        .input-box { background: var(--bg-input); border-radius: 8px; padding: 11px 16px; }
-        .input-box input { background: transparent; border: none; color: white; width: 100%; outline: none; font-size: 15px; }
+        .input-box { background: var(--bg-input); border-radius: 8px; padding: 12px; }
+        input { background: transparent; border: none; color: white; width: 100%; outline: none; font-size: 15px; }
 
-        /* --- LOGIN OVERLAY --- */
-        #authOverlay {
-            position: absolute; inset: 0;
-            background: var(--bg-servers);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 1000;
-        }
-
-        .auth-card {
-            background: var(--bg-channels);
-            padding: 32px; border-radius: 8px;
-            width: 90%; max-width: 420px;
-            text-align: center;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-        }
-
-        .auth-card h2 { margin-bottom: 8px; color: white; }
-        .auth-card p { color: #b5bac1; font-size: 15px; margin-bottom: 24px; }
-
-        .field { text-align: left; margin-bottom: 20px; }
-        .field label { display: block; font-size: 12px; font-weight: bold; color: #b5bac1; margin-bottom: 8px; text-transform: uppercase; }
-        .field input { width: 100%; padding: 10px; background: #1e1f22; border: none; border-radius: 3px; color: white; outline: none; }
-        
-        .auth-btn { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 3px; color: white; font-weight: bold; cursor: pointer; font-size: 16px; }
-        .auth-btn:hover { background: #4752c4; }
-
-        .register-link { margin-top: 16px; font-size: 14px; color: #b5bac1; }
-        .register-link a { color: #00a8fc; text-decoration: none; font-weight: 500; }
-        .register-link a:hover { text-decoration: underline; }
+        /* AUTH */
+        #loginOverlay { position: absolute; inset: 0; background: var(--bg-servers); z-index: 999; display: flex; align-items: center; justify-content: center; }
+        .card { background: var(--bg-channels); padding: 30px; border-radius: 8px; width: 100%; max-width: 400px; text-align: center; }
+        .card input { width: 100%; padding: 12px; background: #1e1f22; border: none; border-radius: 4px; color: white; margin-bottom: 10px; }
+        .btn-blue { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 4px; }
 
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
+    <div id="loginOverlay">
+        <div class="card">
+            <h2 style="color:white">BlocPlay Contact</h2>
+            <p style="color:#b5bac1">Connectez-vous pour continuer</p>
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="pass" placeholder="Mot de passe">
+            <button class="btn-blue" id="btnLogin">Se connecter</button>
+            <p style="font-size:12px; margin-top:15px; color:#b5bac1">Pas de compte ? <a href="https://blocplay-beta.github.io" target="_blank" style="color:#00a8fc; text-decoration:none">S'inscrire</a></p>
+        </div>
+    </div>
+
     <div class="app-container">
-        <nav class="server-sidebar">
-            <div class="server-icon active">BP</div>
-            <div class="separator"></div>
-            <div class="server-icon">#</div>
-            <div class="server-icon" style="font-size: 10px;">PROJ</div>
-        </nav>
+        <aside class="sidebar">
+            <div class="sidebar-header">Utilisateurs</div>
+            <div class="user-list" id="userList"></div>
+            <button onclick="auth.signOut()" style="padding:10px; background:var(--danger); border:none; color:white; cursor:pointer">Quitter</button>
+        </aside>
 
-        <main class="chat-container">
-            
-            <div id="authOverlay">
-                <div class="auth-card">
-                    <h2>Content de vous revoir !</h2>
-                    <p>Connectez-vous avec votre compte BlocPlay.</p>
-                    
-                    <div class="field">
-                        <label>E-mail</label>
-                        <input type="email" id="authEmail" required>
-                    </div>
-                    
-                    <div class="field">
-                        <label>Mot de passe</label>
-                        <input type="password" id="authPassword" required>
-                    </div>
-                    
-                    <button class="auth-btn" id="loginBtn">Se connecter</button>
-                    
-                    <div class="register-link">
-                        Pas encore de compte ? <br>
-                        <a href="https://blocplay-beta.github.io" target="_blank">S'inscrire sur BlocPlay-beta</a>
-                    </div>
-                </div>
-            </div>
-
+        <main class="chat-main">
             <header class="chat-header">
-                <span># flux-général</span>
-                <button onclick="logout()" id="logoutBtn" class="hidden" style="background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold;">Déconnexion</button>
+                <span id="targetName"># Sélectionnez un contact</span>
             </header>
-
-            <div id="messageList"></div>
-
+            <div id="messages"></div>
             <div class="input-area">
                 <div class="input-box">
-                    <input type="text" id="userInput" placeholder="Envoyer un message dans #flux-général">
+                    <input type="text" id="userInput" placeholder="Choisissez un utilisateur pour parler" disabled>
                 </div>
             </div>
         </main>
@@ -162,10 +87,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, onChildAdded, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // CONFIG FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyAQHLAG_Dvnc-a8LDJ__05oRwMmEtUkn04",
             authDomain: "blocplay-a9417.firebaseapp.com",
@@ -181,74 +105,96 @@
         const auth = getAuth(app);
 
         let currentUser = null;
+        let activeChatId = null;
 
-        // --- GESTION CONNEXION ---
-        const authOverlay = document.getElementById('authOverlay');
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-
-        loginBtn.onclick = async () => {
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPassword').value;
-
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                alert("Erreur : Compte introuvable ou mot de passe incorrect.");
-                console.error(error);
-            }
+        // --- AUTHENTIFICATION ---
+        document.getElementById('btnLogin').onclick = () => {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            signInWithEmailAndPassword(auth, e, p).catch(() => alert("Identifiants incorrects"));
         };
-
-        window.logout = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                authOverlay.classList.add('hidden');
-                logoutBtn.classList.remove('hidden');
+                document.getElementById('loginOverlay').classList.add('hidden');
+                // Enregistre l'utilisateur dans l'annuaire (nécessaire pour les règles "users")
+                set(ref(db, 'users/' + user.uid), {
+                    uid: user.uid,
+                    name: user.email.split('@')[0],
+                    email: user.email
+                });
+                loadUsers();
             } else {
-                currentUser = null;
-                authOverlay.classList.remove('hidden');
-                logoutBtn.classList.add('hidden');
+                document.getElementById('loginOverlay').classList.remove('hidden');
+                document.getElementById('userList').innerHTML = "";
+                document.getElementById('messages').innerHTML = "";
             }
         });
 
-        // --- GESTION MESSAGES ---
-        const messageList = document.getElementById('messageList');
-        const userInput = document.getElementById('userInput');
-
-        const sendMessage = () => {
-            if (!currentUser) return;
-            const text = userInput.value.trim();
-            if (text === "") return;
-
-            push(ref(db, 'messages'), {
-                text: text,
-                uid: currentUser.uid,
-                name: currentUser.displayName || currentUser.email.split('@')[0],
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        // --- CHARGEMENT LISTE DES GENS ---
+        function loadUsers() {
+            onValue(ref(db, 'users'), (snap) => {
+                const list = document.getElementById('userList');
+                list.innerHTML = "";
+                snap.forEach(child => {
+                    const u = child.val();
+                    if(u.uid === currentUser.uid) return;
+                    
+                    const div = document.createElement('div');
+                    div.className = "user-item";
+                    div.innerHTML = `<div class="avatar">${u.name[0].toUpperCase()}</div><span>${u.name}</span>`;
+                    div.onclick = () => openChat(u);
+                    list.appendChild(div);
+                });
             });
-            userInput.value = "";
-        };
+        }
 
-        userInput.onkeydown = (e) => { if(e.key === "Enter") sendMessage(); };
-
-        onChildAdded(ref(db, 'messages'), (data) => {
-            const msg = data.val();
-            const initial = msg.name ? msg.name.charAt(0).toUpperCase() : "?";
+        // --- OUVERTURE CHAT PRIVÉ ---
+        function openChat(target) {
+            // Important pour tes règles pro : le chatId doit contenir les deux UIDs
+            const ids = [currentUser.uid, target.uid].sort();
+            const newChatId = ids[0] + "_" + ids[1];
             
-            const div = document.createElement('div');
-            div.className = 'message';
-            div.innerHTML = `
-                <div class="avatar-circle">${initial}</div>
-                <div class="msg-info">
-                    <div><span class="msg-user">${msg.name}</span><span class="msg-time">${msg.time}</span></div>
-                    <div class="msg-text">${msg.text}</div>
-                </div>
-            `;
-            messageList.appendChild(div);
-            messageList.scrollTop = messageList.scrollHeight;
-        });
+            if(activeChatId) off(ref(db, 'chats/' + activeChatId));
+            activeChatId = newChatId;
+
+            document.getElementById('targetName').innerText = "@ " + target.name;
+            document.getElementById('userInput').disabled = false;
+            document.getElementById('userInput').placeholder = "Message à " + target.name;
+            
+            const msgArea = document.getElementById('messages');
+            msgArea.innerHTML = "";
+
+            onChildAdded(ref(db, 'chats/' + activeChatId), (data) => {
+                const m = data.val();
+                const d = document.createElement('div');
+                d.className = "msg";
+                d.innerHTML = `
+                    <div class="avatar">${m.author[0].toUpperCase()}</div>
+                    <div class="msg-body">
+                        <span class="msg-user">${m.author}</span>
+                        <span class="msg-text">${m.text}</span>
+                    </div>`;
+                msgArea.appendChild(d);
+                msgArea.scrollTop = msgArea.scrollHeight;
+            });
+        }
+
+        // --- ENVOI ---
+        document.getElementById('userInput').onkeydown = (e) => {
+            if(e.key === "Enter" && activeChatId) {
+                const txt = e.target.value.trim();
+                if(!txt) return;
+                push(ref(db, 'chats/' + activeChatId), {
+                    uid: currentUser.uid,
+                    author: currentUser.email.split('@')[0],
+                    text: txt,
+                    time: Date.now()
+                });
+                e.target.value = "";
+            }
+        };
     </script>
 </body>
 </html>
