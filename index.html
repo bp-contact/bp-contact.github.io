@@ -1,1 +1,257 @@
-caca index
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BP-Contact | BlocPlay</title>
+    <style>
+        /* --- STYLE CSS --- */
+        :root {
+            --primary-color: #007AFF; /* Bleu iOS */
+            --bg-color: #f2f2f7;
+            --chat-bg: #ffffff;
+            --blocplay-gold: #FFD700;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Conteneur du "Téléphone" */
+        .phone-wrapper {
+            width: 360px;
+            height: 740px;
+            background: black;
+            border-radius: 40px;
+            padding: 10px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            border-radius: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Barre d'état */
+        .status-bar {
+            height: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* En-tête de l'App */
+        .app-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        .contact-status h2 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .contact-status span {
+            font-size: 12px;
+            color: #4cd964; /* Vert en ligne */
+        }
+
+        /* Fenêtre de chat */
+        .chat-content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #e5ddd5; /* Texture de fond */
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .received {
+            background: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .sent {
+            background: var(--primary-color);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        /* Zone de saisie */
+        .input-bar {
+            padding: 15px;
+            background: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            outline: none;
+        }
+
+        .btn-send {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Bouton Spécial BlocPlay */
+        .login-overlay {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            background: var(--blocplay-gold);
+            color: black;
+            text-align: center;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            z-index: 10;
+        }
+
+        .login-overlay:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="phone-wrapper">
+        <div class="screen">
+            <div class="status-bar">
+                <span>12:45</span>
+                <span>📶 🔋</span>
+            </div>
+
+            <header class="app-header">
+                <div class="avatar">BP</div>
+                <div class="contact-status">
+                    <h2>Support BlocPlay</h2>
+                    <span>En ligne</span>
+                </div>
+            </header>
+
+            <div class="chat-content" id="chat">
+                <div class="msg received">Bienvenue sur <b>BP-Contact</b>. Connectez-vous avec votre compte BlocPlay pour accéder à vos messages.</div>
+            </div>
+
+            <div class="login-overlay" id="loginBtn" onclick="connectBlocPlay()">
+                🔑 Connexion BlocPlay
+            </div>
+
+            <div class="input-bar">
+                <input type="text" id="userInput" placeholder="Écrire un message...">
+                <button class="btn-send" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- LOGIQUE JAVASCRIPT --- */
+        const chat = document.getElementById('chat');
+        const loginBtn = document.getElementById('loginBtn');
+        const userInput = document.getElementById('userInput');
+
+        function connectBlocPlay() {
+            const pseudo = prompt("Nom d'utilisateur BlocPlay :");
+            if (pseudo) {
+                loginBtn.classList.add('hidden');
+                addMessage(`Système : Connexion réussie. Bienvenue ${pseudo} !`, 'received');
+                setTimeout(() => {
+                    addMessage("Comment pouvons-nous vous aider aujourd'hui ?", 'received');
+                }, 1000);
+            }
+        }
+
+        function sendMessage() {
+            const text = userInput.value;
+            if (text.trim() !== "") {
+                addMessage(text, 'sent');
+                userInput.value = "";
+                
+                // Simulation d'une réponse auto
+                setTimeout(() => {
+                    addMessage("Votre message a bien été reçu par l'équipe BlocPlay.", 'received');
+                }, 1500);
+            }
+        }
+
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            div.innerHTML = text;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight; // Scroll vers le bas
+        }
+
+        // Permet d'envoyer avec la touche "Entrée"
+        userInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+    </script>
+
+</body>
+</html>
