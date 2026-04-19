@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Fix Demandes</title>
+    <title>BP-Contact | Diagnostic Edition</title>
     <style>
         :root {
             --bg-main: #1e1f22;
@@ -25,11 +25,11 @@
         .side-panels { display: flex; height: 100%; transition: transform 0.3s ease; z-index: 1000; }
         .contacts-bar { width: 72px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; flex-shrink: 0; }
         .bp-logo { width: 48px; height: 48px; background: var(--accent); border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: white; }
-        .contact-circle { width: 48px; height: 48px; background: var(--bg-sidebar); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        .contact-circle { width: 48px; height: 48px; background: var(--bg-sidebar); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-weight: bold; font-size: 18px; }
         .add-btn { color: var(--online); border: 2px dashed #35363c; font-size: 24px; }
 
         .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
-        .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; }
+        .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; justify-content: space-between; }
 
         /* CHAT AREA */
         .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); min-width: 0; }
@@ -57,11 +57,14 @@
             .side-panels.open { transform: translateX(0); }
         }
 
+        /* MODALES */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .card { background: var(--bg-sidebar); padding: 25px; border-radius: 15px; width: 90%; max-width: 320px; text-align: center; }
         .card input { width: 100%; padding: 12px; background: #1e1f22; border: 1px solid #444; border-radius: 8px; color: white; margin: 10px 0; outline: none; }
         .btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; }
         .hidden { display: none !important; }
+        
+        .diag-btn { font-size: 10px; background: #444; color: #aaa; border: none; padding: 2px 5px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -92,8 +95,11 @@
                 <div class="contact-circle add-btn" onclick="document.getElementById('addModal').classList.remove('hidden')">+</div>
             </nav>
             <aside class="sidebar-info">
-                <div class="sidebar-header">Amis & Demandes</div>
-                <div id="requestsList" style="padding:15px; border-bottom: 1px solid #1e1f22;"></div>
+                <div class="sidebar-header">
+                    <span>Messages Privés</span>
+                    <button class="diag-btn" id="diagBtn">Diagnostic</button>
+                </div>
+                <div id="requestsList" style="padding:15px; border-bottom: 1px solid #1e1f22; max-height: 200px; overflow-y: auto;"></div>
                 <div id="contactsListNames" style="padding:15px; flex:1; overflow-y:auto;"></div>
                 <button id="logoutBtn" style="padding:15px; background:none; border:none; color:#ed4245; cursor:pointer; font-weight:bold; text-align:left;">DÉCONNEXION</button>
             </aside>
@@ -102,7 +108,7 @@
         <main class="chat-area">
             <header class="chat-header">
                 <button id="mobileMenuBtn">BP</button>
-                <span id="chatTitle">Choisis un ami</span>
+                <span id="chatTitle">Sélectionnez un ami</span>
             </header>
             <div id="messages"></div>
             <div class="input-box">
@@ -135,12 +141,19 @@
         let currentUser = null;
         let activeChatId = null;
 
+        // --- UI ---
         const side = document.getElementById('sidePanels');
         document.getElementById('mobileMenuBtn').onclick = () => side.classList.add('open');
         document.getElementById('bpMenuClose').onclick = () => side.classList.remove('open');
+        document.getElementById('diagBtn').onclick = () => {
+            alert("Ton UID actuel : " + currentUser.uid + "\nEmail : " + currentUser.email);
+        };
 
+        // --- AUTH ---
         document.getElementById('loginBtn').onclick = () => {
-            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value).catch(alert);
+            const e = document.getElementById('email').value.trim();
+            const p = document.getElementById('pass').value;
+            signInWithEmailAndPassword(auth, e, p).catch(err => alert("Erreur connexion: " + err.message));
         };
         document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.reload());
 
@@ -148,89 +161,91 @@
             if (user) {
                 currentUser = user;
                 document.getElementById('loginOverlay').classList.add('hidden');
+                console.log("Connecté en tant que:", user.uid);
+                loadRequests();
                 loadContacts();
-                loadRequests(); 
             } else {
                 document.getElementById('loginOverlay').classList.remove('hidden');
             }
         });
 
-        // --- ENVOI INVITATION ---
+        // --- ENVOYER INVITATION ---
         document.getElementById('sendInviteBtn').onclick = async () => {
             const emailInput = document.getElementById('friendEmail').value.trim().toLowerCase();
-            if (!emailInput || emailInput === currentUser.email.toLowerCase()) return alert("Email invalide");
+            if (!emailInput) return alert("Entrez un email");
+            if (emailInput === currentUser.email.toLowerCase()) return alert("C'est votre propre email !");
 
             try {
-                // On cherche l'utilisateur dans /users par son email
-                const q = query(ref(db, 'users'), orderByChild('email'), equalTo(emailInput));
+                // 1. Chercher l'UID de l'ami par son email
+                const usersRef = ref(db, 'users');
+                const q = query(usersRef, orderByChild('email'), equalTo(emailInput));
                 const snap = await get(q);
 
                 if (snap.exists()) {
-                    // C'est ici que ça peut bloquer : snap.val() contient un objet { "ID_TECHNIQUE": { données } }
-                    const data = snap.val();
-                    const targetId = Object.keys(data)[0]; // On récupère la clé qui est l'UID
+                    const userData = snap.val();
+                    const targetUid = Object.keys(userData)[0]; // Récupère la clé (UID)
                     
+                    // 2. Récupérer MON pseudo
                     const mySnap = await get(ref(db, `users/${currentUser.uid}/displayName`));
                     const myName = mySnap.val() || currentUser.email.split('@')[0];
 
-                    // ON ENVOIE LA DEMANDE
-                    // On force le chemin en String pour être sûr
-                    await set(ref(db, `requests/${targetId}/${currentUser.uid}`), {
+                    // 3. Ecrire la demande
+                    // IMPORTANT: On écrit dans /requests/UID_AMI/MON_UID
+                    await set(ref(db, `requests/${targetUid}/${currentUser.uid}`), {
                         fromUid: currentUser.uid,
-                        fromName: myName
+                        fromName: myName,
+                        at: Date.now()
                     });
 
-                    alert("Invitation envoyée !");
+                    alert("Invitation envoyée à " + emailInput + " !");
                     document.getElementById('addModal').classList.add('hidden');
                     document.getElementById('friendEmail').value = "";
                 } else {
-                    alert("Utilisateur non trouvé dans la base.");
+                    alert("Aucun utilisateur trouvé avec cet email dans la base 'users'.");
                 }
-            } catch (e) { alert("Erreur envoi: " + e.message); }
+            } catch (err) {
+                console.error(err);
+                alert("Erreur de permission ou réseau : " + err.message);
+            }
         };
 
-        // --- AFFICHAGE DES DEMANDES ---
+        // --- CHARGER LES DEMANDES ---
         function loadRequests() {
-            // On écoute TON dossier de demandes
-            const requestRef = ref(db, `requests/${currentUser.uid}`);
-            onValue(requestRef, (snap) => {
+            const reqRef = ref(db, `requests/${currentUser.uid}`);
+            onValue(reqRef, (snap) => {
                 const list = document.getElementById('requestsList');
-                list.innerHTML = ""; 
+                list.innerHTML = "";
                 
                 if (snap.exists()) {
-                    const title = document.createElement('b');
-                    title.style = "font-size:11px; color:var(--online); display:block; margin-bottom:10px;";
-                    title.innerText = "DEMANDES EN ATTENTE";
-                    list.appendChild(title);
+                    const header = document.createElement('div');
+                    header.style = "font-size:11px; color:var(--online); font-weight:bold; margin-bottom:10px;";
+                    header.innerText = "DEMANDES EN ATTENTE";
+                    list.appendChild(header);
 
                     snap.forEach(child => {
                         const r = child.val();
-                        const senderId = child.key; // C'est l'UID de celui qui t'a envoyé la demande
+                        const senderUid = child.key;
 
-                        const d = document.createElement('div');
-                        d.style = "background:#383a40; padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center;";
-                        d.innerHTML = `<span>${r.fromName}</span> <button class="accept-btn" style="background:var(--online); border:none; color:white; border-radius:4px; padding:4px 8px; cursor:pointer;">OK</button>`;
+                        const item = document.createElement('div');
+                        item.style = "background:#383a40; padding:10px; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:13px;";
+                        item.innerHTML = `<span>${r.fromName}</span> <button style="background:var(--online); border:none; color:white; padding:4px 8px; border-radius:4px; cursor:pointer;">OK</button>`;
                         
-                        // Action du bouton OK
-                        d.querySelector('button').onclick = async () => {
-                            await acceptReq(senderId);
-                        };
-                        
-                        list.appendChild(d);
+                        item.querySelector('button').onclick = () => acceptFriend(senderUid);
+                        list.appendChild(item);
                     });
                 }
             });
         }
 
-        async function acceptReq(senderUid) {
+        async function acceptFriend(senderUid) {
             try {
-                // 1. Ajouter mutuellement aux contacts
+                // Ajout mutuel dans /contacts
                 await set(ref(db, `contacts/${currentUser.uid}/${senderUid}`), { uid: senderUid });
                 await set(ref(db, `contacts/${senderUid}/${currentUser.uid}`), { uid: currentUser.uid });
-                // 2. Supprimer la demande
+                // Suppression de la demande
                 await remove(ref(db, `requests/${currentUser.uid}/${senderUid}`));
                 alert("Ami ajouté !");
-            } catch (e) { alert(e.message); }
+            } catch (err) { alert(err.message); }
         }
 
         // --- CONTACTS ---
@@ -243,15 +258,19 @@
                 
                 snap.forEach(c => {
                     const fid = String(c.val().uid);
-                    onValue(ref(db, `users/${fid}/displayName`), (nSnap) => {
-                        const name = nSnap.val() || "Ami";
+                    onValue(ref(db, `users/${fid}`), (uSnap) => {
+                        if(!uSnap.exists()) return;
+                        const u = uSnap.val();
+                        const name = u.displayName || u.email.split('@')[0];
                         
+                        // Icône gauche
                         const icon = document.createElement('div');
                         icon.className = "contact-circle";
                         icon.innerText = name[0].toUpperCase();
                         icon.onclick = () => { openChat(fid, name); side.classList.remove('open'); };
                         iconList.appendChild(icon);
 
+                        // Nom liste
                         const nDiv = document.createElement('div');
                         nDiv.style = "padding:10px; cursor:pointer; border-radius:8px; font-size:14px; margin-bottom:5px; background:#2b2d31;";
                         nDiv.innerText = name;
@@ -265,7 +284,7 @@
         // --- CHAT ---
         function openChat(friendId, friendName) {
             if(activeChatId) off(ref(db, 'chats/' + activeChatId));
-            const ids = [String(currentUser.uid), String(friendId)].sort();
+            const ids = [currentUser.uid, friendId].sort();
             activeChatId = ids[0] + "_" + ids[1];
             
             document.getElementById('chatTitle').innerText = friendName;
@@ -276,23 +295,11 @@
                 mDiv.innerHTML = "";
                 snap.forEach(m => {
                     const v = m.val();
-                    const isMe = String(v.authorUid) === String(currentUser.uid);
-                    const wrapper = document.createElement('div');
-                    wrapper.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
-                    
-                    const authorSpan = document.createElement('div');
-                    authorSpan.className = "msg-author";
-                    authorSpan.innerText = isMe ? "Moi" : "Chargement...";
-                    
-                    wrapper.innerHTML = `<div class="bubble">${v.text}</div>`;
-                    wrapper.prepend(authorSpan);
-                    mDiv.appendChild(wrapper);
-
-                    if (!isMe) {
-                        get(ref(db, `users/${v.authorUid}/displayName`)).then(n => {
-                            authorSpan.innerText = n.val() || "Ami";
-                        });
-                    }
+                    const isMe = v.authorUid === currentUser.uid;
+                    const wrap = document.createElement('div');
+                    wrap.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
+                    wrap.innerHTML = `<div class="msg-author">${isMe ? 'Moi' : friendName}</div><div class="bubble">${v.text}</div>`;
+                    mDiv.appendChild(wrap);
                 });
                 mDiv.scrollTop = mDiv.scrollHeight;
             });
