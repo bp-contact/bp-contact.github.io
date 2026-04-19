@@ -16,76 +16,83 @@
             --text-muted: #949ba4;
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-main); color: var(--text-main); overflow: hidden; }
 
         .app-container { display: flex; height: 100vh; width: 100vw; position: relative; }
 
-        /* MENU HAMBURGER (Mobile seulement) */
-        .hamburger {
-            display: none; position: fixed; top: 10px; left: 10px; z-index: 1001;
-            background: var(--accent); color: white; border: none; border-radius: 5px;
-            padding: 8px 12px; cursor: pointer; font-size: 20px;
-        }
-
         /* BARRES LATÉRALES */
-        .side-panels { display: flex; height: 100%; transition: transform 0.3s ease; z-index: 1000; }
+        .side-panels { display: flex; height: 100%; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
 
         .contacts-bar { width: 72px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; flex-shrink: 0; }
+        
+        /* BOUTON BP (Sert de Hamburger) */
+        .bp-logo { 
+            width: 48px; height: 48px; background: var(--accent); border-radius: 15px; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; font-weight: bold; color: white; font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1002;
+        }
+
         .contact-circle { 
             width: 48px; height: 48px; background: var(--bg-sidebar); border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
             cursor: pointer; transition: 0.2s; font-weight: bold; color: white; font-size: 18px;
         }
-        .contact-circle:hover, .contact-circle.active { border-radius: 15px; background: var(--accent); }
+        .contact-circle:hover { border-radius: 15px; background: var(--accent); }
         .add-btn { color: #23a559; border: 2px dashed #35363c; }
 
         .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
         .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; }
 
         /* ZONE CHAT */
-        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); min-width: 0; }
-        .chat-header { height: 50px; padding: 0 15px 0 60px; display: flex; align-items: center; border-bottom: 1px solid #26272d; font-weight: bold; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); min-width: 0; position: relative; }
+        .chat-header { height: 50px; padding: 0 15px; display: flex; align-items: center; border-bottom: 1px solid #26272d; font-weight: bold; font-size: 16px; }
+        
+        /* Bouton Menu Mobile (BP visible seulement si side fermé) */
+        #mobileMenuBtn { 
+            display: none; margin-right: 15px; background: var(--accent); 
+            border: none; color: white; border-radius: 8px; padding: 5px 10px; 
+            font-weight: bold; cursor: pointer;
+        }
 
-        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
 
-        /* BULLES AMÉLIORÉES */
+        /* BULLES */
         .msg-wrapper { display: flex; flex-direction: column; max-width: 85%; animation: fadeIn 0.2s ease; }
         .msg-me { align-self: flex-end; align-items: flex-end; }
         .msg-friend { align-self: flex-start; align-items: flex-start; }
 
-        .msg-author { font-size: 12px; font-weight: bold; margin-bottom: 4px; color: var(--text-muted); }
+        .msg-author { font-size: 11px; font-weight: bold; margin-bottom: 2px; color: var(--text-muted); padding: 0 5px; }
         .bubble { 
-            padding: 10px 16px; border-radius: 20px; font-size: 15px; line-height: 1.4;
-            position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            padding: 10px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .msg-me .bubble { background: var(--msg-me); color: white; border-bottom-right-radius: 4px; }
         .msg-friend .bubble { background: var(--msg-friend); color: var(--text-main); border-bottom-left-radius: 4px; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
 
         /* INPUT */
-        .input-box { padding: 15px 20px 35px; background: var(--bg-chat); }
-        .input-wrap { background: #383a40; border-radius: 10px; padding: 12px 16px; }
+        .input-box { padding: 10px 20px 30px; background: var(--bg-chat); }
+        .input-wrap { background: #383a40; border-radius: 12px; padding: 12px 16px; }
         #userInput { background: transparent; border: none; color: white; width: 100%; outline: none; font-size: 15px; }
 
-        /* RESPONSIVE / MOBILE */
+        /* RESPONSIVE */
         @media (max-width: 768px) {
-            .hamburger { display: block; }
-            .side-panels { position: absolute; transform: translateX(-100%); }
+            #mobileMenuBtn { display: block; }
+            .side-panels { position: absolute; transform: translateX(-100%); width: 312px; }
             .side-panels.open { transform: translateX(0); }
         }
 
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .card { background: var(--bg-sidebar); padding: 30px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; }
+        .card { background: var(--bg-sidebar); padding: 25px; border-radius: 15px; width: 90%; max-width: 320px; text-align: center; }
         .card input { width: 100%; padding: 12px; background: #1e1f22; border: 1px solid #444; border-radius: 8px; color: white; margin: 15px 0; outline: none; }
         .btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-
-    <button class="hamburger" id="menuToggle">☰</button>
 
     <div id="loginOverlay" class="overlay">
         <div class="card">
@@ -108,23 +115,26 @@
     <div class="app-container">
         <div class="side-panels" id="sidePanels">
             <nav class="contacts-bar">
-                <div class="contact-circle active">BP</div>
+                <div class="bp-logo" id="bpMenuClose">BP</div>
                 <div id="contactsIconsList" style="display:contents;"></div>
                 <div class="contact-circle add-btn" onclick="document.getElementById('addModal').classList.remove('hidden')">+</div>
             </nav>
 
             <aside class="sidebar-info">
-                <div class="sidebar-header">Amis</div>
+                <div class="sidebar-header">Messages Privés</div>
                 <div style="padding: 15px; flex:1; overflow-y:auto;">
                     <div id="requestsList"></div>
                     <div id="activeInfo" style="margin-top:20px;"></div>
                 </div>
-                <button id="logoutBtn" style="padding:15px; background:none; border:none; color:#ed4245; cursor:pointer; text-align:left; font-weight:bold;">DÉCONNEXION</button>
+                <button id="logoutBtn" style="padding:15px; background:none; border:none; color:#ed4245; cursor:pointer; font-weight:bold; text-align:left;">DÉCONNEXION</button>
             </aside>
         </div>
 
         <main class="chat-area">
-            <header class="chat-header" id="chatTitle">Discussion</header>
+            <header class="chat-header">
+                <button id="mobileMenuBtn">BP</button>
+                <span id="chatTitle">Sélectionnez un ami</span>
+            </header>
             <div id="messages"></div>
             <div class="input-box">
                 <div class="input-wrap">
@@ -156,10 +166,10 @@
         let currentUser = null;
         let activeChatId = null;
 
-        // --- TOGGLE MENU MOBILE ---
-        document.getElementById('menuToggle').onclick = () => {
-            document.getElementById('sidePanels').classList.toggle('open');
-        };
+        // --- GESTION DU MENU ---
+        const side = document.getElementById('sidePanels');
+        document.getElementById('mobileMenuBtn').onclick = () => side.classList.add('open');
+        document.getElementById('bpMenuClose').onclick = () => side.classList.remove('open');
 
         // --- AUTH ---
         document.getElementById('loginBtn').onclick = () => {
@@ -171,14 +181,6 @@
             if (user) {
                 currentUser = user;
                 document.getElementById('loginOverlay').classList.add('hidden');
-                const userRef = ref(db, 'users/' + user.uid);
-                const snap = await get(userRef);
-                const existing = snap.exists() ? snap.val() : {};
-                await update(userRef, {
-                    uid: user.uid,
-                    email: user.email.toLowerCase(),
-                    name: existing.name || user.email.split('@')[0]
-                });
                 loadContacts();
                 loadRequests();
             } else {
@@ -193,32 +195,32 @@
             const snap = await get(q);
             if (snap.exists()) {
                 const target = Object.values(snap.val())[0];
-                const mySnap = await get(ref(db, 'users/' + currentUser.uid));
-                await set(ref(db, `requests/${target.uid}/${currentUser.uid}`), { fromUid: currentUser.uid, fromName: mySnap.val().name });
-                alert("Envoyé !");
+                const myS = await get(ref(db, 'users/' + currentUser.uid));
+                await set(ref(db, `requests/${target.uid}/${currentUser.uid}`), { fromUid: currentUser.uid, fromName: myS.val().name });
+                alert("Invitation envoyée !");
                 document.getElementById('addModal').classList.add('hidden');
-            } else { alert("Inconnu"); }
+            }
         };
 
         function loadRequests() {
             onValue(ref(db, `requests/${currentUser.uid}`), (snap) => {
                 const list = document.getElementById('requestsList');
-                list.innerHTML = snap.exists() ? "<b>Demandes :</b><br>" : "";
+                list.innerHTML = snap.exists() ? "<b>DEMANDES</b>" : "";
                 snap.forEach(c => {
                     const r = c.val();
                     const d = document.createElement('div');
-                    d.style = "background:#383a40; padding:10px; border-radius:8px; margin-top:5px; font-size:12px;";
-                    d.innerHTML = `${r.fromName} <button onclick="accept('${r.fromUid}')" style="background:#23a559; border:none; color:white; border-radius:3px; cursor:pointer;">OK</button>`;
+                    d.style = "background:#383a40; padding:10px; border-radius:8px; margin-top:8px; font-size:13px;";
+                    d.innerHTML = `${r.fromName} <button onclick="acceptReq('${r.fromUid}')" style="background:#23a559; border:none; color:white; border-radius:4px; padding:4px 8px; cursor:pointer; float:right;">OK</button>`;
                     list.appendChild(d);
                 });
             });
         }
 
-        window.accept = async (uid) => {
+        window.acceptReq = async (uid) => {
             const myS = await get(ref(db, 'users/' + currentUser.uid));
             const targetS = await get(ref(db, 'users/' + uid));
-            await set(ref(db, `contacts/${currentUser.uid}/${uid}`), targetS.val());
-            await set(ref(db, `contacts/${uid}/${currentUser.uid}`), myS.val());
+            await set(ref(db, `contacts/${currentUser.uid}/${uid}`), { uid: uid });
+            await set(ref(db, `contacts/${uid}/${currentUser.uid}`), { uid: currentUser.uid });
             await remove(ref(db, `requests/${currentUser.uid}/${uid}`));
         };
 
@@ -228,23 +230,32 @@
                 list.innerHTML = "";
                 snap.forEach(c => {
                     const f = c.val();
-                    const i = document.createElement('div');
-                    i.className = "contact-circle";
-                    i.innerText = f.name[0].toUpperCase();
-                    i.onclick = () => { openChat(f); document.getElementById('sidePanels').classList.remove('open'); };
-                    list.appendChild(i);
+                    // On récupère le pseudo en temps réel dans 'users'
+                    onValue(ref(db, `users/${f.uid}/name`), (nSnap) => {
+                        const name = nSnap.val() || "Ami";
+                        let icon = document.getElementById('icon-' + f.uid);
+                        if(!icon) {
+                            icon = document.createElement('div');
+                            icon.id = 'icon-' + f.uid;
+                            icon.className = "contact-circle";
+                            icon.onclick = () => { openChat(f.uid, name); side.classList.remove('open'); };
+                            list.appendChild(icon);
+                        }
+                        icon.innerText = name[0].toUpperCase();
+                    });
                 });
             });
         }
 
         // --- CHAT ---
-        function openChat(friend) {
+        function openChat(friendUid, friendName) {
             if(activeChatId) off(ref(db, 'chats/' + activeChatId));
-            const ids = [currentUser.uid, friend.uid].sort();
+            const ids = [currentUser.uid, friendUid].sort();
             activeChatId = ids[0] + "_" + ids[1];
             
-            document.getElementById('chatTitle').innerText = friend.name;
+            document.getElementById('chatTitle').innerText = "# " + friendName;
             document.getElementById('userInput').disabled = false;
+            document.getElementById('userInput').placeholder = "Envoyer un message à " + friendName;
 
             const mDiv = document.getElementById('messages');
             onValue(ref(db, 'chats/' + activeChatId), (snap) => {
@@ -252,29 +263,29 @@
                 snap.forEach(m => {
                     const v = m.val();
                     const isMe = v.authorUid === currentUser.uid;
-                    const wrapper = document.createElement('div');
-                    wrapper.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
                     
-                    // Correction du 'undefined' : on utilise authorName, ou "Inconnu" par défaut
-                    const displayName = v.authorName || "Utilisateur";
-                    
-                    wrapper.innerHTML = `
-                        <div class="msg-author">${isMe ? 'Moi' : displayName}</div>
-                        <div class="bubble">${v.text}</div>
-                    `;
-                    mDiv.appendChild(wrapper);
+                    // ON RÉCUPÈRE LE PSEUDO DE L'AUTEUR DANS LA BRANCHE USERS
+                    get(ref(db, `users/${v.authorUid}/name`)).then(nameSnap => {
+                        const realName = nameSnap.val() || "Ancien Profil";
+                        const wrapper = document.createElement('div');
+                        wrapper.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
+                        wrapper.innerHTML = `
+                            <div class="msg-author">${isMe ? 'Moi' : realName}</div>
+                            <div class="bubble">${v.text}</div>
+                        `;
+                        mDiv.appendChild(wrapper);
+                        mDiv.scrollTop = mDiv.scrollHeight;
+                    });
                 });
-                mDiv.scrollTop = mDiv.scrollHeight;
             });
         }
 
         document.getElementById('userInput').onkeydown = async (e) => {
             if(e.key === "Enter" && e.target.value.trim() && activeChatId) {
-                const myS = await get(ref(db, 'users/' + currentUser.uid));
                 push(ref(db, 'chats/' + activeChatId), { 
                     authorUid: currentUser.uid,
-                    authorName: myS.val().name, // On enregistre bien le nom ici
-                    text: e.target.value
+                    text: e.target.value,
+                    ts: Date.now()
                 });
                 e.target.value = "";
             }
