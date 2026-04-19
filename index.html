@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Notifications Edition</title>
+    <title>BP-Contact | Notifications Fix</title>
     <style>
         :root {
             --bg-main: #1e1f22;
@@ -20,22 +20,12 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         
         body, html { 
-            margin: 0; 
-            padding: 0; 
-            height: 100%; 
-            width: 100%; 
-            background: var(--bg-main); 
-            color: var(--text-main); 
-            overflow: hidden; 
-            position: fixed; 
+            margin: 0; padding: 0; height: 100%; width: 100%; 
+            background: var(--bg-main); color: var(--text-main); 
+            overflow: hidden; position: fixed; 
         }
 
-        .app-container { 
-            display: flex; 
-            height: 100vh; 
-            height: -webkit-fill-available;
-            width: 100vw; 
-        }
+        .app-container { display: flex; height: 100vh; height: -webkit-fill-available; width: 100vw; }
 
         .side-panels { display: flex; height: 100%; transition: transform 0.3s ease; z-index: 1000; flex-shrink: 0; }
         .contacts-bar { width: 72px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; }
@@ -44,57 +34,16 @@
         .add-btn { color: var(--online); border: 2px dashed #35363c; font-size: 24px; }
 
         .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
-        .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; flex-shrink: 0; }
+        .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; flex-shrink: 0; justify-content: space-between; }
 
-        .chat-area { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            background: var(--bg-chat); 
-            min-width: 0; 
-            height: 100%;
-        }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); min-width: 0; height: 100%; }
+        .chat-header { height: 50px; padding: 0 15px; display: flex; align-items: center; border-bottom: 1px solid #26272d; font-weight: bold; flex-shrink: 0; }
 
-        .chat-header { 
-            height: 50px; 
-            padding: 0 15px; 
-            display: flex; 
-            align-items: center; 
-            border-bottom: 1px solid #26272d; 
-            font-weight: bold; 
-            flex-shrink: 0; 
-        }
+        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; -webkit-overflow-scrolling: touch; }
 
-        #messages { 
-            flex: 1; 
-            padding: 20px; 
-            overflow-y: auto; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .input-box { 
-            padding: 10px 15px 15px 15px; 
-            background: var(--bg-chat);
-            flex-shrink: 0;
-        }
-
-        .input-wrap { 
-            background: #383a40; 
-            border-radius: 8px; 
-            padding: 10px 15px; 
-        }
-
-        #userInput { 
-            background: transparent; 
-            border: none; 
-            color: white; 
-            width: 100%; 
-            outline: none; 
-            font-size: 16px; 
-        }
+        .input-box { padding: 10px 15px 15px 15px; background: var(--bg-chat); flex-shrink: 0; }
+        .input-wrap { background: #383a40; border-radius: 8px; padding: 10px 15px; }
+        #userInput { background: transparent; border: none; color: white; width: 100%; outline: none; font-size: 16px; }
 
         .msg-wrapper { display: flex; flex-direction: column; max-width: 80%; }
         .msg-me { align-self: flex-end; align-items: flex-end; }
@@ -115,6 +64,9 @@
         .card input { width: 100%; padding: 12px; background: #1e1f22; border: 1px solid #444; border-radius: 8px; color: white; margin: 10px 0; outline: none; }
         .btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; margin-top: 10px; }
         .hidden { display: none !important; }
+
+        /* Style bouton notification */
+        #notifBtn { font-size: 18px; cursor: pointer; background: none; border: none; padding: 0; }
     </style>
 </head>
 <body>
@@ -146,7 +98,10 @@
             </nav>
 
             <aside class="sidebar-info">
-                <div class="sidebar-header">Amis & Demandes</div>
+                <div class="sidebar-header">
+                    <span>Amis</span>
+                    <button id="notifBtn" title="Activer les notifications">🔔</button>
+                </div>
                 <div id="requestsList" style="padding:15px; border-bottom: 1px solid #1e1f22; max-height: 200px; overflow-y: auto;"></div>
                 <div id="contactsListNames" style="padding:15px; flex:1; overflow-y:auto;"></div>
                 <button id="logoutBtn" style="padding:15px; background:none; border:none; color:#ed4245; cursor:pointer; font-weight:bold; text-align:left;">DÉCONNEXION</button>
@@ -155,7 +110,7 @@
 
         <main class="chat-area">
             <header class="chat-header">
-                <button id="mobileMenuBtn">BP</button>
+                <button id="mobileMenuBtn" style="display:none; width:35px; height:35px; background:var(--accent); border:none; color:white; border-radius:8px; font-weight:bold; margin-right:12px;">BP</button>
                 <span id="chatTitle">Sélectionnez une discussion</span>
             </header>
             <div id="messages"></div>
@@ -189,22 +144,33 @@
         let currentUser = null;
         let myCustomId = null;
         let activeChatId = null;
-        let knownChats = new Set(); // Pour éviter les notifications au chargement
+        let knownMsgIds = new Set();
 
+        // Menu Mobile Fix
         const side = document.getElementById('sidePanels');
-        document.getElementById('mobileMenuBtn').onclick = () => side.classList.add('open');
+        const mobBtn = document.getElementById('mobileMenuBtn');
+        mobBtn.onclick = () => side.classList.add('open');
         document.getElementById('bpMenuClose').onclick = () => side.classList.remove('open');
+        if(window.innerWidth <= 768) mobBtn.style.display = 'block';
 
         // --- GESTION NOTIFICATIONS ---
-        function initNotifications() {
-            if ("Notification" in window) {
-                Notification.requestPermission();
+        document.getElementById('notifBtn').onclick = () => {
+            if (!("Notification" in window)) {
+                alert("Ce navigateur ne supporte pas les notifications.");
+                return;
             }
-        }
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    new Notification("BlocPlay", { body: "Notifications activées !" });
+                    document.getElementById('notifBtn').style.opacity = "0.3";
+                }
+            });
+        };
 
         function sendNotify(title, body) {
+            // On envoie la notif seulement si le site n'est pas l'onglet actif
             if (Notification.permission === "granted" && document.hidden) {
-                new Notification(title, { body: body, icon: 'https://cdn-icons-png.flaticon.com/512/733/733548.png' });
+                new Notification(title, { body: body });
             }
         }
 
@@ -212,80 +178,67 @@
         document.getElementById('loginBtn').onclick = () => {
             const e = document.getElementById('email').value.trim();
             const p = document.getElementById('pass').value;
-            signInWithEmailAndPassword(auth, e, p).catch(err => alert("Erreur : " + err.message));
+            signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
         };
         document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.reload());
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                initNotifications();
                 const q = query(ref(db, 'users'), orderByChild('email'), equalTo(user.email.toLowerCase()));
                 const snap = await get(q);
-                if (snap.exists()) {
-                    myCustomId = Object.keys(snap.val())[0];
-                } else {
-                    myCustomId = user.uid;
-                }
+                myCustomId = snap.exists() ? Object.keys(snap.val())[0] : user.uid;
                 document.getElementById('loginOverlay').classList.add('hidden');
                 loadRequests();
                 loadContacts();
-                listenToAllGlobalMessages(); // Nouvelle fonction notifications
+                listenForGlobalNotifications();
             } else {
                 document.getElementById('loginOverlay').classList.remove('hidden');
             }
         });
 
-        // --- NOTIFICATIONS GLOBAL ---
-        function listenToAllGlobalMessages() {
-            // On surveille les contacts pour savoir quelles discussions écouter
+        // --- ECOUTE DES NOTIFS ---
+        function listenForGlobalNotifications() {
             onValue(ref(db, `contacts/${myCustomId}`), (snap) => {
                 snap.forEach(c => {
                     const friendId = c.val().uid;
                     const ids = [String(myCustomId), String(friendId)].sort();
                     const chatId = ids[0] + "_" + ids[1];
                     
-                    // On écoute le dernier message de chaque chat
-                    const lastMsgQuery = query(ref(db, `chats/${chatId}`), limitToLast(1));
-                    onValue(lastMsgQuery, (mSnap) => {
-                        mSnap.forEach(msgData => {
-                            const msg = msgData.val();
-                            const msgId = msgData.key;
-                            
-                            // Si ce n'est pas moi, que le chat n'est pas ouvert et que le message est nouveau
-                            if (String(msg.authorUid) !== String(myCustomId) && 
-                                chatId !== activeChatId && 
-                                !knownChats.has(msgId)) {
-                                
-                                // On récupère le nom de l'ami pour la notif
-                                get(ref(db, `users/${msg.authorUid}/displayName`)).then(uSnap => {
-                                    const senderName = uSnap.val() || "Ami";
-                                    sendNotify(`Nouveau message de ${senderName}`, msg.text);
+                    const lastMsgRef = query(ref(db, `chats/${chatId}`), limitToLast(1));
+                    onValue(lastMsgRef, (mSnap) => {
+                        mSnap.forEach(mChild => {
+                            const m = mChild.val();
+                            const mid = mChild.key;
+                            // Notifier si : Message pas de moi ET pas le chat ouvert ET message jamais vu
+                            if (String(m.authorUid) !== String(myCustomId) && chatId !== activeChatId && !knownMsgIds.has(mid)) {
+                                get(ref(db, `users/${m.authorUid}/displayName`)).then(u => {
+                                    sendNotify(u.val() || "Nouveau message", m.text);
                                 });
                             }
-                            knownChats.add(msgId);
+                            knownMsgIds.add(mid);
                         });
                     });
                 });
             });
         }
 
-        // --- RESTANT DU CODE (Inchangé) ---
+        // --- LOGIQUE CHAT & CONTACTS ---
         document.getElementById('sendInviteBtn').onclick = async () => {
             const emailInput = document.getElementById('friendEmail').value.trim().toLowerCase();
-            if (!emailInput || emailInput === currentUser.email.toLowerCase()) return alert("Email invalide");
-            try {
-                const q = query(ref(db, 'users'), orderByChild('email'), equalTo(emailInput));
-                const snap = await get(q);
-                if (snap.exists()) {
-                    const targetId = Object.keys(snap.val())[0];
-                    const mySnap = await get(ref(db, `users/${myCustomId}/displayName`));
-                    const myName = mySnap.val() || currentUser.email.split('@')[0];
-                    await set(ref(db, `requests/${targetId}/${myCustomId}`), { fromUid: myCustomId, fromName: myName, at: Date.now() });
-                    alert("Invitation envoyée !");
-                    document.getElementById('addModal').classList.add('hidden');
-                } else { alert("Utilisateur non trouvé."); }
-            } catch (err) { alert(err.message); }
+            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(emailInput));
+            const snap = await get(q);
+            if (snap.exists()) {
+                const targetId = Object.keys(snap.val())[0];
+                const myNameSnap = await get(ref(db, `users/${myCustomId}/displayName`));
+                await set(ref(db, `requests/${targetId}/${myCustomId}`), { 
+                    fromUid: myCustomId, 
+                    fromName: myNameSnap.val() || currentUser.email.split('@')[0], 
+                    at: Date.now() 
+                });
+                alert("Invitation envoyée !");
+                document.getElementById('addModal').classList.add('hidden');
+            } else { alert("Utilisateur inconnu."); }
         };
 
         function loadRequests() {
@@ -293,12 +246,11 @@
                 const list = document.getElementById('requestsList');
                 list.innerHTML = "";
                 if (snap.exists()) {
-                    list.innerHTML = `<div style="font-size:11px; color:var(--online); font-weight:bold; margin-bottom:10px;">DEMANDES EN ATTENTE</div>`;
+                    list.innerHTML = `<div style="font-size:11px; color:var(--online); font-weight:bold; margin-bottom:10px;">DEMANDES</div>`;
                     snap.forEach(child => {
-                        const r = child.val();
                         const div = document.createElement('div');
                         div.style = "background:#383a40; padding:10px; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:13px;";
-                        div.innerHTML = `<span>${r.fromName}</span> <button style="background:var(--online); border:none; color:white; padding:4px 8px; border-radius:4px; cursor:pointer;">OK</button>`;
+                        div.innerHTML = `<span>${child.val().fromName}</span> <button style="background:var(--online); border:none; color:white; padding:4px 8px; border-radius:4px; cursor:pointer;">OK</button>`;
                         div.querySelector('button').onclick = async () => {
                             await set(ref(db, `contacts/${myCustomId}/${child.key}`), { uid: child.key });
                             await set(ref(db, `contacts/${child.key}/${myCustomId}`), { uid: myCustomId });
@@ -350,7 +302,7 @@
                     wrap.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
                     wrap.innerHTML = `<div class="msg-author">${isMe ? 'Moi' : friendName}</div><div class="bubble">${v.text}</div>`;
                     mDiv.appendChild(wrap);
-                    knownChats.add(m.key); // Marquer comme lu
+                    knownMsgIds.add(m.key);
                 });
                 mDiv.scrollTop = mDiv.scrollHeight;
             });
