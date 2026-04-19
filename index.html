@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Hamburger Fix</title>
+    <title>BP-Contact | Officiel</title>
     <style>
         :root {
             --bg-main: #1e1f22;
@@ -19,95 +19,58 @@
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        
-        body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%; 
-            background: var(--bg-main); color: var(--text-main); 
-            overflow: hidden; position: fixed; 
-        }
-
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-main); color: var(--text-main); overflow: hidden; position: fixed; }
         .app-container { display: flex; height: 100vh; height: -webkit-fill-available; width: 100vw; }
 
-        /* Panneaux latéraux */
+        /* Sidebars */
         .side-panels { display: flex; height: 100%; transition: transform 0.3s ease; z-index: 1000; flex-shrink: 0; }
-        
         .contacts-bar { width: 72px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; }
         .bp-logo { width: 48px; height: 48px; background: var(--accent); border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: white; }
-
-        .contact-circle { 
-            position: relative; width: 48px; height: 48px; background: var(--bg-sidebar); 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; font-weight: bold; font-size: 18px; text-transform: uppercase; 
-        }
-        .notif-dot { 
-            position: absolute; top: 0; right: 0; width: 14px; height: 14px; 
-            background: var(--danger); border-radius: 50%; border: 3px solid var(--bg-main); 
-            display: none; 
-        }
+        
+        .contact-circle { position: relative; width: 48px; height: 48px; background: var(--bg-sidebar); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; font-size: 18px; text-transform: uppercase; }
+        .add-btn { color: var(--online); border: 2px dashed #35363c; font-size: 24px; }
+        .notif-dot { position: absolute; top: 0; right: 0; width: 14px; height: 14px; background: var(--danger); border-radius: 50%; border: 3px solid var(--bg-main); display: none; }
         .notif-dot.active { display: block; }
 
         .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
         .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; justify-content: space-between; }
 
+        /* Section Demandes */
+        #requestsList { padding: 10px 15px; border-bottom: 1px solid #1e1f22; max-height: 150px; overflow-y: auto; }
+        .request-item { background: #383a40; padding: 8px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .accept-btn { background: var(--online); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
         /* Chat */
         .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); min-width: 0; height: 100%; }
         .chat-header { height: 50px; padding: 0 15px; display: flex; align-items: center; border-bottom: 1px solid #26272d; font-weight: bold; }
-
-        /* BOUTON HAMBURGER MOBILE */
-        #mobileMenuBtn { 
-            display: none; 
-            background: none; 
-            border: none; 
-            color: var(--text-muted); 
-            font-size: 28px; 
-            cursor: pointer; 
-            margin-right: 10px; 
-            padding: 0;
-            line-height: 1;
-        }
+        #mobileMenuBtn { display: none; background: none; border: none; color: var(--text-muted); font-size: 28px; cursor: pointer; margin-right: 10px; padding: 0; }
 
         #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-
-        .msg-wrapper { display: flex; flex-direction: column; max-width: 80%; }
-        .msg-me { align-self: flex-end; align-items: flex-end; }
-        .msg-friend { align-self: flex-start; align-items: flex-start; }
-        .msg-author { font-size: 11px; font-weight: bold; margin-bottom: 2px; color: var(--text-muted); }
-        .bubble { padding: 10px 16px; border-radius: 18px; font-size: 15px; word-wrap: break-word; }
-        .msg-me .bubble { background: var(--msg-me); color: white; border-bottom-right-radius: 4px; }
-        .msg-friend .bubble { background: var(--msg-friend); color: var(--text-main); border-bottom-left-radius: 4px; }
-
         .input-box { padding: 20px; background: var(--bg-chat); }
         .input-wrap { background: #383a40; border-radius: 8px; padding: 10px 15px; }
         #userInput { background: transparent; border: none; color: white; width: 100%; outline: none; font-size: 16px; }
 
-        /* Alerte interne */
-        #topAlert { 
-            position: fixed; top: -80px; left: 50%; transform: translateX(-50%); 
-            background: var(--accent); color: white; padding: 12px 25px; 
-            border-radius: 30px; z-index: 9999; transition: 0.5s; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-weight: bold; 
-        }
+        .msg-wrapper { display: flex; flex-direction: column; max-width: 80%; }
+        .msg-me { align-self: flex-end; align-items: flex-end; }
+        .msg-friend { align-self: flex-start; align-items: flex-start; }
+        .bubble { padding: 10px 16px; border-radius: 18px; font-size: 15px; word-wrap: break-word; }
+        .msg-me .bubble { background: var(--msg-me); color: white; border-bottom-right-radius: 4px; }
+        .msg-friend .bubble { background: var(--msg-friend); color: var(--text-main); border-bottom-left-radius: 4px; }
+
+        #topAlert { position: fixed; top: -80px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; padding: 12px 25px; border-radius: 30px; z-index: 9999; transition: 0.5s; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-weight: bold; }
         #topAlert.show { top: 20px; }
 
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             #mobileMenuBtn { display: block; }
-            .side-panels { 
-                position: absolute; 
-                transform: translateX(-100%); 
-                width: 312px; 
-                height: 100%; 
-                box-shadow: 10px 0 30px rgba(0,0,0,0.5);
-            }
+            .side-panels { position: absolute; transform: translateX(-100%); width: 312px; height: 100%; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
             .side-panels.open { transform: translateX(0); }
         }
 
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .card { background: var(--bg-sidebar); padding: 25px; border-radius: 15px; width: 90%; max-width: 320px; text-align: center; }
         .card input { width: 100%; padding: 12px; background: #1e1f22; border: 1px solid #444; border-radius: 8px; color: white; margin: 10px 0; outline: none; }
-        .btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        .btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; margin-top: 10px; }
         .hidden { display: none !important; }
-
         #notifBtn { font-size: 18px; cursor: pointer; background: none; border: none; opacity: 0.3; }
         #notifBtn.active { opacity: 1; }
     </style>
@@ -125,17 +88,28 @@
         </div>
     </div>
 
+    <div id="addModal" class="overlay hidden">
+        <div class="card">
+            <h3>Nouveau Contact</h3>
+            <input type="email" id="friendEmail" placeholder="email@exemple.com">
+            <button class="btn" id="sendInviteBtn">Envoyer la demande</button>
+            <button class="btn" style="background:#4e5058;" onclick="document.getElementById('addModal').classList.add('hidden')">Fermer</button>
+        </div>
+    </div>
+
     <div class="app-container">
         <div class="side-panels" id="sidePanels">
             <nav class="contacts-bar">
                 <div class="bp-logo" id="bpMenuClose">BP</div>
                 <div id="contactsIconsList" style="display:contents;"></div>
+                <div class="contact-circle add-btn" onclick="document.getElementById('addModal').classList.remove('hidden')">+</div>
             </nav>
             <aside class="sidebar-info">
                 <div class="sidebar-header">
-                    <span>Amis</span>
+                    <span>Contacts</span>
                     <button id="notifBtn">🔔</button>
                 </div>
+                <div id="requestsList"></div>
                 <div id="contactsListNames" style="padding:15px; flex:1; overflow-y:auto;"></div>
                 <button id="logoutBtn" style="padding:15px; background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold; text-align:left;">DÉCONNEXION</button>
             </aside>
@@ -157,7 +131,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -194,12 +168,49 @@
                 myId = snap.exists() ? Object.keys(snap.val())[0] : user.uid;
                 document.getElementById('loginOverlay').classList.add('hidden');
                 loadContacts();
+                loadRequests();
                 setTimeout(() => firstLoad = false, 3000);
             } else {
                 document.getElementById('loginOverlay').classList.remove('hidden');
             }
         });
 
+        // DEMANDES DE CONTACT
+        function loadRequests() {
+            onValue(ref(db, `requests/${myId}`), (snap) => {
+                const list = document.getElementById('requestsList');
+                list.innerHTML = "";
+                if (snap.exists()) {
+                    list.innerHTML = `<div style="font-size:11px; color:var(--online); font-weight:bold; margin-bottom:10px;">DEMANDES EN ATTENTE</div>`;
+                    snap.forEach(child => {
+                        const data = child.val();
+                        const div = document.createElement('div');
+                        div.className = "request-item";
+                        div.innerHTML = `<span>${data.fromName}</span> <button class="accept-btn">ACCEPTER</button>`;
+                        div.querySelector('button').onclick = async () => {
+                            await set(ref(db, `contacts/${myId}/${child.key}`), { uid: child.key });
+                            await set(ref(db, `contacts/${child.key}/${myId}`), { uid: myId });
+                            await remove(ref(db, `requests/${myId}/${child.key}`));
+                        };
+                        list.appendChild(div);
+                    });
+                }
+            });
+        }
+
+        document.getElementById('sendInviteBtn').onclick = async () => {
+            const email = document.getElementById('friendEmail').value.trim().toLowerCase();
+            const snap = await get(query(ref(db, 'users'), orderByChild('email'), equalTo(email)));
+            if (snap.exists()) {
+                const targetId = Object.keys(snap.val())[0];
+                const me = await get(ref(db, `users/${myId}/displayName`));
+                await set(ref(db, `requests/${targetId}/${myId}`), { fromUid: myId, fromName: me.val() || currentUser.email, at: Date.now() });
+                alert("Demande envoyée !");
+                document.getElementById('addModal').classList.add('hidden');
+            } else { alert("Utilisateur introuvable."); }
+        };
+
+        // CONTACTS
         function loadContacts() {
             onValue(ref(db, `contacts/${myId}`), (snap) => {
                 const iconList = document.getElementById('contactsIconsList');
@@ -216,7 +227,7 @@
                         iconList.appendChild(icon);
 
                         const nDiv = document.createElement('div');
-                        nDiv.style = "padding:12px; cursor:pointer; background:#2b2d31; border-radius:8px; margin-bottom:5px;";
+                        nDiv.style = "padding:12px; cursor:pointer; background:#2b2d31; border-radius:8px; margin-bottom:5px; font-weight:500;";
                         nDiv.innerText = name;
                         nDiv.onclick = () => openChat(fid, name);
                         nameList.appendChild(nDiv);
@@ -256,7 +267,7 @@
                     const isMe = v.authorUid === myId;
                     const wrap = document.createElement('div');
                     wrap.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
-                    wrap.innerHTML = `<div class="msg-author">${isMe ? 'Moi' : friendName}</div><div class="bubble">${v.text}</div>`;
+                    wrap.innerHTML = `<div class="bubble">${v.text}</div>`;
                     mDiv.appendChild(wrap);
                 });
                 mDiv.scrollTop = mDiv.scrollHeight;
@@ -271,7 +282,7 @@
             }
         };
 
-        // Mobile Logic
+        // UI Logic
         document.getElementById('mobileMenuBtn').onclick = () => document.getElementById('sidePanels').classList.add('open');
         document.getElementById('bpMenuClose').onclick = () => document.getElementById('sidePanels').classList.remove('open');
         document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
