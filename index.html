@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Final Notif Fix</title>
+    <title>BP-Contact | Ultra Notif</title>
     <style>
         :root {
             --bg-main: #1e1f22;
@@ -145,6 +145,7 @@
         let myCustomId = null;
         let activeChatId = null;
         let knownMsgIds = new Set();
+        let isFirstLoad = true;
 
         const side = document.getElementById('sidePanels');
         const mobBtn = document.getElementById('mobileMenuBtn');
@@ -152,40 +153,25 @@
         document.getElementById('bpMenuClose').onclick = () => side.classList.remove('open');
         if(window.innerWidth <= 768) mobBtn.style.display = 'block';
 
-        // --- FIX NOTIFICATIONS SAMSUNG / FIREFOX ---
+        // --- NOTIFICATIONS ---
         const nBtn = document.getElementById('notifBtn');
         
         nBtn.onclick = async () => {
-            if (!("Notification" in window)) {
-                alert("Notifications non supportées sur ce navigateur.");
-                return;
-            }
-            
-            // Pour Samsung Internet, il faut parfois forcer l'interaction
             const permission = await Notification.requestPermission();
-            
             if (permission === "granted") {
                 nBtn.classList.add('active');
-                new Notification("BlocPlay", { body: "Notifications activées avec succès !" });
-            } else if (permission === "denied") {
-                alert("Notifications bloquées. Activez-les dans les paramètres du site (le cadenas dans la barre d'adresse).");
+                new Notification("BlocPlay", { body: "Prêt à recevoir des messages !" });
             }
         };
 
-        // On vérifie l'état au chargement
-        if ("Notification" in window && Notification.permission === "granted") {
-            nBtn.classList.add('active');
-        }
-
         function sendNotify(title, body) {
-            // Uniquement si l'utilisateur n'est pas sur la page
-            if (Notification.permission === "granted" && document.hidden) {
-                try {
-                    new Notification(title, { body: body });
-                } catch (e) {
-                    // Fallback pour certains navigateurs mobiles
-                    console.log("Erreur notif:", e);
-                }
+            // TEST FORCE : On retire la condition document.hidden pour vérifier si ça marche
+            if (Notification.permission === "granted") {
+                new Notification(title, { 
+                    body: body,
+                    tag: 'new-msg', // Évite d'empiler 50 notifs
+                    silent: false
+                });
             }
         }
 
@@ -206,6 +192,9 @@
                 document.getElementById('loginOverlay').classList.add('hidden');
                 loadRequests();
                 loadContacts();
+                
+                // Petit délai pour éviter de notifier tous les anciens messages au démarrage
+                setTimeout(() => { isFirstLoad = false; }, 3000);
                 listenForGlobalNotifications();
             } else {
                 document.getElementById('loginOverlay').classList.remove('hidden');
@@ -224,9 +213,15 @@
                         mSnap.forEach(mChild => {
                             const m = mChild.val();
                             const mid = mChild.key;
-                            if (String(m.authorUid) !== String(myCustomId) && chatId !== activeChatId && !knownMsgIds.has(mid)) {
+
+                            // LOGIQUE NOTIF
+                            if (!isFirstLoad && 
+                                String(m.authorUid) !== String(myCustomId) && 
+                                chatId !== activeChatId && 
+                                !knownMsgIds.has(mid)) {
+                                
                                 get(ref(db, `users/${m.authorUid}/displayName`)).then(u => {
-                                    sendNotify(u.val() || "Message reçu", m.text);
+                                    sendNotify(u.val() || "Nouveau message", m.text);
                                 });
                             }
                             knownMsgIds.add(mid);
@@ -236,7 +231,7 @@
             });
         }
 
-        // --- CONTACTS & CHAT (LOGIQUE STABLE) ---
+        // --- LOGIQUE STABLE ---
         document.getElementById('sendInviteBtn').onclick = async () => {
             const emailInput = document.getElementById('friendEmail').value.trim().toLowerCase();
             const q = query(ref(db, 'users'), orderByChild('email'), equalTo(emailInput));
@@ -251,7 +246,7 @@
                 });
                 alert("Invitation envoyée !");
                 document.getElementById('addModal').classList.add('hidden');
-            } else { alert("Utilisateur inconnu."); }
+            }
         };
 
         function loadRequests() {
