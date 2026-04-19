@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Full Fix Edition</title>
+    <title>BP-Contact | Notifications Edition</title>
     <style>
         :root {
             --bg-main: #1e1f22;
@@ -19,7 +19,6 @@
 
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         
-        /* Correction hauteur et scroll pour mobile et PC */
         body, html { 
             margin: 0; 
             padding: 0; 
@@ -38,7 +37,6 @@
             width: 100vw; 
         }
 
-        /* SIDEBARS */
         .side-panels { display: flex; height: 100%; transition: transform 0.3s ease; z-index: 1000; flex-shrink: 0; }
         .contacts-bar { width: 72px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; }
         .bp-logo { width: 48px; height: 48px; background: var(--accent); border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: white; }
@@ -48,7 +46,6 @@
         .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
         .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; flex-shrink: 0; }
 
-        /* ZONE CHAT DYNAMIQUE */
         .chat-area { 
             flex: 1; 
             display: flex; 
@@ -78,7 +75,6 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* BARRE DE SAISIE FIXÉE EN BAS */
         .input-box { 
             padding: 10px 15px 15px 15px; 
             background: var(--bg-chat);
@@ -100,7 +96,6 @@
             font-size: 16px; 
         }
 
-        /* MESSAGES */
         .msg-wrapper { display: flex; flex-direction: column; max-width: 80%; }
         .msg-me { align-self: flex-end; align-items: flex-end; }
         .msg-friend { align-self: flex-start; align-items: flex-start; }
@@ -115,7 +110,6 @@
             .side-panels.open { transform: translateX(0); }
         }
 
-        /* MODALES */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .card { background: var(--bg-sidebar); padding: 25px; border-radius: 15px; width: 90%; max-width: 320px; text-align: center; }
         .card input { width: 100%; padding: 12px; background: #1e1f22; border: 1px solid #444; border-radius: 8px; color: white; margin: 10px 0; outline: none; }
@@ -175,7 +169,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove, off, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -195,11 +189,26 @@
         let currentUser = null;
         let myCustomId = null;
         let activeChatId = null;
+        let knownChats = new Set(); // Pour éviter les notifications au chargement
 
         const side = document.getElementById('sidePanels');
         document.getElementById('mobileMenuBtn').onclick = () => side.classList.add('open');
         document.getElementById('bpMenuClose').onclick = () => side.classList.remove('open');
 
+        // --- GESTION NOTIFICATIONS ---
+        function initNotifications() {
+            if ("Notification" in window) {
+                Notification.requestPermission();
+            }
+        }
+
+        function sendNotify(title, body) {
+            if (Notification.permission === "granted" && document.hidden) {
+                new Notification(title, { body: body, icon: 'https://cdn-icons-png.flaticon.com/512/733/733548.png' });
+            }
+        }
+
+        // --- AUTH ---
         document.getElementById('loginBtn').onclick = () => {
             const e = document.getElementById('email').value.trim();
             const p = document.getElementById('pass').value;
@@ -210,6 +219,7 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
+                initNotifications();
                 const q = query(ref(db, 'users'), orderByChild('email'), equalTo(user.email.toLowerCase()));
                 const snap = await get(q);
                 if (snap.exists()) {
@@ -220,11 +230,47 @@
                 document.getElementById('loginOverlay').classList.add('hidden');
                 loadRequests();
                 loadContacts();
+                listenToAllGlobalMessages(); // Nouvelle fonction notifications
             } else {
                 document.getElementById('loginOverlay').classList.remove('hidden');
             }
         });
 
+        // --- NOTIFICATIONS GLOBAL ---
+        function listenToAllGlobalMessages() {
+            // On surveille les contacts pour savoir quelles discussions écouter
+            onValue(ref(db, `contacts/${myCustomId}`), (snap) => {
+                snap.forEach(c => {
+                    const friendId = c.val().uid;
+                    const ids = [String(myCustomId), String(friendId)].sort();
+                    const chatId = ids[0] + "_" + ids[1];
+                    
+                    // On écoute le dernier message de chaque chat
+                    const lastMsgQuery = query(ref(db, `chats/${chatId}`), limitToLast(1));
+                    onValue(lastMsgQuery, (mSnap) => {
+                        mSnap.forEach(msgData => {
+                            const msg = msgData.val();
+                            const msgId = msgData.key;
+                            
+                            // Si ce n'est pas moi, que le chat n'est pas ouvert et que le message est nouveau
+                            if (String(msg.authorUid) !== String(myCustomId) && 
+                                chatId !== activeChatId && 
+                                !knownChats.has(msgId)) {
+                                
+                                // On récupère le nom de l'ami pour la notif
+                                get(ref(db, `users/${msg.authorUid}/displayName`)).then(uSnap => {
+                                    const senderName = uSnap.val() || "Ami";
+                                    sendNotify(`Nouveau message de ${senderName}`, msg.text);
+                                });
+                            }
+                            knownChats.add(msgId);
+                        });
+                    });
+                });
+            });
+        }
+
+        // --- RESTANT DU CODE (Inchangé) ---
         document.getElementById('sendInviteBtn').onclick = async () => {
             const emailInput = document.getElementById('friendEmail').value.trim().toLowerCase();
             if (!emailInput || emailInput === currentUser.email.toLowerCase()) return alert("Email invalide");
@@ -304,6 +350,7 @@
                     wrap.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
                     wrap.innerHTML = `<div class="msg-author">${isMe ? 'Moi' : friendName}</div><div class="bubble">${v.text}</div>`;
                     mDiv.appendChild(wrap);
+                    knownChats.add(m.key); // Marquer comme lu
                 });
                 mDiv.scrollTop = mDiv.scrollHeight;
             });
