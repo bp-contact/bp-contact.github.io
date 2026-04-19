@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Version Finale</title>
+    <title>BP-Contact | Final</title>
     <style>
         :root {
             --bg-main: #1e1f22;
@@ -17,14 +17,16 @@
             --online: #23a559;
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-main); color: var(--text-main); overflow: hidden; }
+        
         .app-container { display: flex; height: 100vh; width: 100vw; position: relative; }
 
         /* --- SIDEBARS --- */
         .side-panels { display: flex; height: 100%; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
         .contacts-bar { width: 72px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; flex-shrink: 0; }
         
+        /* Logo BP servant de bouton Fermer sur mobile */
         .bp-logo { 
             width: 48px; height: 48px; background: var(--accent); border-radius: 15px; 
             display: flex; align-items: center; justify-content: center; 
@@ -43,20 +45,21 @@
         .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
         .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; }
 
-        /* --- CHAT AREA --- */
+        /* --- ZONE DE CHAT --- */
         .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); min-width: 0; position: relative; }
         .chat-header { height: 50px; padding: 0 15px; display: flex; align-items: center; border-bottom: 1px solid #26272d; font-weight: bold; }
         
+        /* Bouton BP ouvrant le menu sur mobile */
         #mobileMenuBtn { 
             display: none; width: 38px; height: 38px; background: var(--accent); 
             border: none; color: white; border-radius: 10px; font-weight: bold; 
             cursor: pointer; margin-right: 12px; font-size: 14px;
         }
 
-        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
 
-        /* --- BULLES --- */
-        .msg-wrapper { display: flex; flex-direction: column; max-width: 80%; animation: fadeIn 0.2s ease; }
+        /* --- BULLLES --- */
+        .msg-wrapper { display: flex; flex-direction: column; max-width: 82%; animation: fadeIn 0.2s ease; }
         .msg-me { align-self: flex-end; align-items: flex-end; }
         .msg-friend { align-self: flex-start; align-items: flex-start; }
 
@@ -67,19 +70,19 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
 
-        /* --- INPUT --- */
+        /* --- SAISIE --- */
         .input-box { padding: 10px 20px 35px; background: var(--bg-chat); }
         .input-wrap { background: #383a40; border-radius: 12px; padding: 12px 16px; }
         #userInput { background: transparent; border: none; color: white; width: 100%; outline: none; font-size: 15px; }
 
-        /* --- MOBILE --- */
+        /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
             #mobileMenuBtn { display: block; }
             .side-panels { position: absolute; transform: translateX(-100%); width: 312px; box-shadow: 10px 0 20px rgba(0,0,0,0.5); }
             .side-panels.open { transform: translateX(0); }
         }
 
-        /* --- OVERLAYS --- */
+        /* --- FENÊTRES MODALES --- */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .card { background: var(--bg-sidebar); padding: 25px; border-radius: 15px; width: 90%; max-width: 320px; text-align: center; }
         .card input { width: 100%; padding: 12px; background: #1e1f22; border: 1px solid #444; border-radius: 8px; color: white; margin: 10px 0; outline: none; }
@@ -115,7 +118,7 @@
                 <div class="contact-circle add-btn" onclick="document.getElementById('addModal').classList.remove('hidden')">+</div>
             </nav>
             <aside class="sidebar-info">
-                <div class="sidebar-header">Messages Privés</div>
+                <div class="sidebar-header">Discussion</div>
                 <div id="requestsList" style="padding:15px; border-bottom: 1px solid #1e1f22;"></div>
                 <div id="contactsListNames" style="padding:15px; flex:1; overflow-y:auto;"></div>
                 <button id="logoutBtn" style="padding:15px; background:none; border:none; color:#ed4245; cursor:pointer; font-weight:bold; text-align:left;">DÉCONNEXION</button>
@@ -125,7 +128,7 @@
         <main class="chat-area">
             <header class="chat-header">
                 <button id="mobileMenuBtn">BP</button>
-                <span id="chatTitle">Sélectionnez un ami</span>
+                <span id="chatTitle">Choisis un ami</span>
             </header>
             <div id="messages"></div>
             <div class="input-box">
@@ -158,12 +161,11 @@
         let currentUser = null;
         let activeChatId = null;
 
-        // --- MENU LOGIQUE ---
         const side = document.getElementById('sidePanels');
         document.getElementById('mobileMenuBtn').onclick = () => side.classList.add('open');
         document.getElementById('bpMenuClose').onclick = () => side.classList.remove('open');
 
-        // --- AUTH ---
+        // CONNEXION
         document.getElementById('loginBtn').onclick = () => {
             signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value).catch(alert);
         };
@@ -180,29 +182,44 @@
             }
         });
 
-        // --- INVITATIONS (FIXÉ) ---
+        // INVITATIONS (Logique blindée)
         document.getElementById('sendInviteBtn').onclick = async () => {
             const emailInput = document.getElementById('friendEmail').value.trim().toLowerCase();
-            if (!emailInput || emailInput === currentUser.email.toLowerCase()) return alert("Email invalide");
+            const btn = document.getElementById('sendInviteBtn');
 
-            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(emailInput));
-            const snap = await get(q);
+            if (!emailInput || emailInput === currentUser.email.toLowerCase()) return alert("Email non valide");
 
-            if (snap.exists()) {
-                const targetUid = Object.keys(snap.val())[0];
-                const mySnap = await get(ref(db, `users/${currentUser.uid}/displayName`));
-                const myName = mySnap.val() || "Un utilisateur";
+            btn.disabled = true;
+            btn.innerText = "Recherche...";
 
-                await set(ref(db, `requests/${targetUid}/${currentUser.uid}`), {
-                    fromUid: currentUser.uid,
-                    fromName: myName
-                });
+            try {
+                const q = query(ref(db, 'users'), orderByChild('email'), equalTo(emailInput));
+                const snap = await get(q);
 
-                alert("Invitation envoyée !");
-                document.getElementById('addModal').classList.add('hidden');
-                document.getElementById('friendEmail').value = "";
-            } else {
-                alert("Utilisateur non trouvé.");
+                if (snap.exists()) {
+                    const targetUid = Object.keys(snap.val())[0];
+                    
+                    // On récupère TON displayName
+                    const mySnap = await get(ref(db, `users/${currentUser.uid}/displayName`));
+                    const myName = mySnap.val() || "Un ami";
+
+                    // Envoi RÉEL
+                    await set(ref(db, `requests/${targetUid}/${currentUser.uid}`), {
+                        fromUid: currentUser.uid,
+                        fromName: myName
+                    });
+
+                    alert("Invitation envoyée !");
+                    document.getElementById('addModal').classList.add('hidden');
+                    document.getElementById('friendEmail').value = "";
+                } else {
+                    alert("Utilisateur non trouvé.");
+                }
+            } catch (e) {
+                alert("Erreur: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Envoyer l'invitation";
             }
         };
 
@@ -226,7 +243,7 @@
             await remove(ref(db, `requests/${currentUser.uid}/${uid}`));
         };
 
-        // --- CONTACTS ---
+        // CONTACTS & PSEUDOS
         function loadContacts() {
             onValue(ref(db, `contacts/${currentUser.uid}`), (snap) => {
                 const iconList = document.getElementById('contactsIconsList');
@@ -239,15 +256,13 @@
                     onValue(ref(db, `users/${fid}/displayName`), (nSnap) => {
                         const name = nSnap.val() || "Ami";
                         
-                        // Icône
-                        let icon = document.createElement('div');
+                        const icon = document.createElement('div');
                         icon.className = "contact-circle";
                         icon.innerText = name[0].toUpperCase();
                         icon.onclick = () => { openChat(fid, name); side.classList.remove('open'); };
                         iconList.appendChild(icon);
 
-                        // Nom
-                        let nDiv = document.createElement('div');
+                        const nDiv = document.createElement('div');
                         nDiv.style = "padding:10px; cursor:pointer; border-radius:8px; font-size:14px; margin-bottom:5px; background:#2b2d31;";
                         nDiv.innerText = name;
                         nDiv.onclick = () => { openChat(fid, name); side.classList.remove('open'); };
@@ -257,7 +272,7 @@
             });
         }
 
-        // --- CHAT LOGIQUE ---
+        // CHAT (Gestion des côtés et pseudos)
         function openChat(friendId, friendName) {
             if(activeChatId) off(ref(db, 'chats/' + activeChatId));
             const ids = [String(currentUser.uid), String(friendId)].sort();
@@ -265,7 +280,6 @@
             
             document.getElementById('chatTitle').innerText = friendName;
             document.getElementById('userInput').disabled = false;
-            document.getElementById('userInput').placeholder = "Envoyer un message à " + friendName;
             
             const mDiv = document.getElementById('messages');
             onValue(ref(db, 'chats/' + activeChatId), (snap) => {
