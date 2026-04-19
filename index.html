@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Notifications Fix</title>
+    <title>BP-Contact | Final Notif Fix</title>
     <style>
         :root {
             --bg-main: #1e1f22;
@@ -65,8 +65,8 @@
         .btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; margin-top: 10px; }
         .hidden { display: none !important; }
 
-        /* Style bouton notification */
-        #notifBtn { font-size: 18px; cursor: pointer; background: none; border: none; padding: 0; }
+        #notifBtn { font-size: 18px; cursor: pointer; background: none; border: none; padding: 0; filter: grayscale(1); transition: 0.3s; }
+        #notifBtn.active { filter: grayscale(0); transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -100,7 +100,7 @@
             <aside class="sidebar-info">
                 <div class="sidebar-header">
                     <span>Amis</span>
-                    <button id="notifBtn" title="Activer les notifications">🔔</button>
+                    <button id="notifBtn">🔔</button>
                 </div>
                 <div id="requestsList" style="padding:15px; border-bottom: 1px solid #1e1f22; max-height: 200px; overflow-y: auto;"></div>
                 <div id="contactsListNames" style="padding:15px; flex:1; overflow-y:auto;"></div>
@@ -146,31 +146,46 @@
         let activeChatId = null;
         let knownMsgIds = new Set();
 
-        // Menu Mobile Fix
         const side = document.getElementById('sidePanels');
         const mobBtn = document.getElementById('mobileMenuBtn');
         mobBtn.onclick = () => side.classList.add('open');
         document.getElementById('bpMenuClose').onclick = () => side.classList.remove('open');
         if(window.innerWidth <= 768) mobBtn.style.display = 'block';
 
-        // --- GESTION NOTIFICATIONS ---
-        document.getElementById('notifBtn').onclick = () => {
+        // --- FIX NOTIFICATIONS SAMSUNG / FIREFOX ---
+        const nBtn = document.getElementById('notifBtn');
+        
+        nBtn.onclick = async () => {
             if (!("Notification" in window)) {
-                alert("Ce navigateur ne supporte pas les notifications.");
+                alert("Notifications non supportées sur ce navigateur.");
                 return;
             }
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    new Notification("BlocPlay", { body: "Notifications activées !" });
-                    document.getElementById('notifBtn').style.opacity = "0.3";
-                }
-            });
+            
+            // Pour Samsung Internet, il faut parfois forcer l'interaction
+            const permission = await Notification.requestPermission();
+            
+            if (permission === "granted") {
+                nBtn.classList.add('active');
+                new Notification("BlocPlay", { body: "Notifications activées avec succès !" });
+            } else if (permission === "denied") {
+                alert("Notifications bloquées. Activez-les dans les paramètres du site (le cadenas dans la barre d'adresse).");
+            }
         };
 
+        // On vérifie l'état au chargement
+        if ("Notification" in window && Notification.permission === "granted") {
+            nBtn.classList.add('active');
+        }
+
         function sendNotify(title, body) {
-            // On envoie la notif seulement si le site n'est pas l'onglet actif
+            // Uniquement si l'utilisateur n'est pas sur la page
             if (Notification.permission === "granted" && document.hidden) {
-                new Notification(title, { body: body });
+                try {
+                    new Notification(title, { body: body });
+                } catch (e) {
+                    // Fallback pour certains navigateurs mobiles
+                    console.log("Erreur notif:", e);
+                }
             }
         }
 
@@ -197,7 +212,6 @@
             }
         });
 
-        // --- ECOUTE DES NOTIFS ---
         function listenForGlobalNotifications() {
             onValue(ref(db, `contacts/${myCustomId}`), (snap) => {
                 snap.forEach(c => {
@@ -210,10 +224,9 @@
                         mSnap.forEach(mChild => {
                             const m = mChild.val();
                             const mid = mChild.key;
-                            // Notifier si : Message pas de moi ET pas le chat ouvert ET message jamais vu
                             if (String(m.authorUid) !== String(myCustomId) && chatId !== activeChatId && !knownMsgIds.has(mid)) {
                                 get(ref(db, `users/${m.authorUid}/displayName`)).then(u => {
-                                    sendNotify(u.val() || "Nouveau message", m.text);
+                                    sendNotify(u.val() || "Message reçu", m.text);
                                 });
                             }
                             knownMsgIds.add(mid);
@@ -223,7 +236,7 @@
             });
         }
 
-        // --- LOGIQUE CHAT & CONTACTS ---
+        // --- CONTACTS & CHAT (LOGIQUE STABLE) ---
         document.getElementById('sendInviteBtn').onclick = async () => {
             const emailInput = document.getElementById('friendEmail').value.trim().toLowerCase();
             const q = query(ref(db, 'users'), orderByChild('email'), equalTo(emailInput));
