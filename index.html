@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Pro</title>
+    <title>BP-Contact | Ultra Fix</title>
     <style>
         :root {
             --bg-main: #1e1f22;
@@ -21,17 +21,16 @@
 
         .app-container { display: flex; height: 100vh; width: 100vw; position: relative; }
 
-        /* BARRES LATÉRALES */
+        /* SIDEBARS */
         .side-panels { display: flex; height: 100%; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
-
         .contacts-bar { width: 72px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; flex-shrink: 0; }
         
-        /* BOUTON BP (Sert de Hamburger) */
+        /* LOGO BP (BOUTON FERMER MOBILE) */
         .bp-logo { 
             width: 48px; height: 48px; background: var(--accent); border-radius: 15px; 
             display: flex; align-items: center; justify-content: center; 
             cursor: pointer; font-weight: bold; color: white; font-size: 18px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1002;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
         .contact-circle { 
@@ -40,34 +39,30 @@
             cursor: pointer; transition: 0.2s; font-weight: bold; color: white; font-size: 18px;
         }
         .contact-circle:hover { border-radius: 15px; background: var(--accent); }
-        .add-btn { color: #23a559; border: 2px dashed #35363c; }
 
         .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
         .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; }
 
         /* ZONE CHAT */
         .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); min-width: 0; position: relative; }
-        .chat-header { height: 50px; padding: 0 15px; display: flex; align-items: center; border-bottom: 1px solid #26272d; font-weight: bold; font-size: 16px; }
+        .chat-header { height: 50px; padding: 0 15px; display: flex; align-items: center; border-bottom: 1px solid #26272d; font-weight: bold; }
         
-        /* Bouton Menu Mobile (BP visible seulement si side fermé) */
+        /* BOUTON BP (OUVRIR MOBILE) */
         #mobileMenuBtn { 
-            display: none; margin-right: 15px; background: var(--accent); 
-            border: none; color: white; border-radius: 8px; padding: 5px 10px; 
-            font-weight: bold; cursor: pointer;
+            display: none; width: 35px; height: 35px; background: var(--accent); 
+            border: none; color: white; border-radius: 8px; font-weight: bold; 
+            cursor: pointer; margin-right: 12px;
         }
 
-        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
 
-        /* BULLES */
+        /* BULLLES STYLÉES */
         .msg-wrapper { display: flex; flex-direction: column; max-width: 85%; animation: fadeIn 0.2s ease; }
         .msg-me { align-self: flex-end; align-items: flex-end; }
         .msg-friend { align-self: flex-start; align-items: flex-start; }
 
-        .msg-author { font-size: 11px; font-weight: bold; margin-bottom: 2px; color: var(--text-muted); padding: 0 5px; }
-        .bubble { 
-            padding: 10px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        .msg-author { font-size: 11px; font-weight: bold; margin-bottom: 2px; color: var(--text-muted); }
+        .bubble { padding: 10px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .msg-me .bubble { background: var(--msg-me); color: white; border-bottom-right-radius: 4px; }
         .msg-friend .bubble { background: var(--msg-friend); color: var(--text-main); border-bottom-left-radius: 4px; }
 
@@ -78,14 +73,14 @@
         .input-wrap { background: #383a40; border-radius: 12px; padding: 12px 16px; }
         #userInput { background: transparent; border: none; color: white; width: 100%; outline: none; font-size: 15px; }
 
-        /* RESPONSIVE */
+        /* MOBILE FIX */
         @media (max-width: 768px) {
             #mobileMenuBtn { display: block; }
             .side-panels { position: absolute; transform: translateX(-100%); width: 312px; }
             .side-panels.open { transform: translateX(0); }
         }
 
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .card { background: var(--bg-sidebar); padding: 25px; border-radius: 15px; width: 90%; max-width: 320px; text-align: center; }
         .card input { width: 100%; padding: 12px; background: #1e1f22; border: 1px solid #444; border-radius: 8px; color: white; margin: 15px 0; outline: none; }
         .btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; }
@@ -117,7 +112,7 @@
             <nav class="contacts-bar">
                 <div class="bp-logo" id="bpMenuClose">BP</div>
                 <div id="contactsIconsList" style="display:contents;"></div>
-                <div class="contact-circle add-btn" onclick="document.getElementById('addModal').classList.remove('hidden')">+</div>
+                <div class="contact-circle" style="color:#23a559; border:2px dashed #35363c;" onclick="document.getElementById('addModal').classList.remove('hidden')">+</div>
             </nav>
 
             <aside class="sidebar-info">
@@ -133,7 +128,7 @@
         <main class="chat-area">
             <header class="chat-header">
                 <button id="mobileMenuBtn">BP</button>
-                <span id="chatTitle">Sélectionnez un ami</span>
+                <span id="chatTitle">Choisis une discussion</span>
             </header>
             <div id="messages"></div>
             <div class="input-box">
@@ -146,7 +141,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove, off, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -166,18 +161,18 @@
         let currentUser = null;
         let activeChatId = null;
 
-        // --- GESTION DU MENU ---
+        // MENU MOBILE
         const side = document.getElementById('sidePanels');
         document.getElementById('mobileMenuBtn').onclick = () => side.classList.add('open');
         document.getElementById('bpMenuClose').onclick = () => side.classList.remove('open');
 
-        // --- AUTH ---
+        // AUTH
         document.getElementById('loginBtn').onclick = () => {
             signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value).catch(alert);
         };
         document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.reload());
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 document.getElementById('loginOverlay').classList.add('hidden');
@@ -188,50 +183,15 @@
             }
         });
 
-        // --- AMIS ---
-        document.getElementById('confirmAdd').onclick = async () => {
-            const email = document.getElementById('friendEmail').value.trim().toLowerCase();
-            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
-            const snap = await get(q);
-            if (snap.exists()) {
-                const target = Object.values(snap.val())[0];
-                const myS = await get(ref(db, 'users/' + currentUser.uid));
-                await set(ref(db, `requests/${target.uid}/${currentUser.uid}`), { fromUid: currentUser.uid, fromName: myS.val().name });
-                alert("Invitation envoyée !");
-                document.getElementById('addModal').classList.add('hidden');
-            }
-        };
-
-        function loadRequests() {
-            onValue(ref(db, `requests/${currentUser.uid}`), (snap) => {
-                const list = document.getElementById('requestsList');
-                list.innerHTML = snap.exists() ? "<b>DEMANDES</b>" : "";
-                snap.forEach(c => {
-                    const r = c.val();
-                    const d = document.createElement('div');
-                    d.style = "background:#383a40; padding:10px; border-radius:8px; margin-top:8px; font-size:13px;";
-                    d.innerHTML = `${r.fromName} <button onclick="acceptReq('${r.fromUid}')" style="background:#23a559; border:none; color:white; border-radius:4px; padding:4px 8px; cursor:pointer; float:right;">OK</button>`;
-                    list.appendChild(d);
-                });
-            });
-        }
-
-        window.acceptReq = async (uid) => {
-            const myS = await get(ref(db, 'users/' + currentUser.uid));
-            const targetS = await get(ref(db, 'users/' + uid));
-            await set(ref(db, `contacts/${currentUser.uid}/${uid}`), { uid: uid });
-            await set(ref(db, `contacts/${uid}/${currentUser.uid}`), { uid: currentUser.uid });
-            await remove(ref(db, `requests/${currentUser.uid}/${uid}`));
-        };
-
+        // CONTACTS & PSEUDOS
         function loadContacts() {
             onValue(ref(db, `contacts/${currentUser.uid}`), (snap) => {
                 const list = document.getElementById('contactsIconsList');
                 list.innerHTML = "";
                 snap.forEach(c => {
                     const f = c.val();
-                    // On récupère le pseudo en temps réel dans 'users'
-                    onValue(ref(db, `users/${f.uid}/name`), (nSnap) => {
+                    // On cherche displayName à la place de name
+                    onValue(ref(db, `users/${f.uid}/displayName`), (nSnap) => {
                         const name = nSnap.val() || "Ami";
                         let icon = document.getElementById('icon-' + f.uid);
                         if(!icon) {
@@ -247,15 +207,14 @@
             });
         }
 
-        // --- CHAT ---
+        // CHAT
         function openChat(friendUid, friendName) {
             if(activeChatId) off(ref(db, 'chats/' + activeChatId));
             const ids = [currentUser.uid, friendUid].sort();
             activeChatId = ids[0] + "_" + ids[1];
             
-            document.getElementById('chatTitle').innerText = "# " + friendName;
+            document.getElementById('chatTitle').innerText = friendName;
             document.getElementById('userInput').disabled = false;
-            document.getElementById('userInput').placeholder = "Envoyer un message à " + friendName;
 
             const mDiv = document.getElementById('messages');
             onValue(ref(db, 'chats/' + activeChatId), (snap) => {
@@ -264,9 +223,9 @@
                     const v = m.val();
                     const isMe = v.authorUid === currentUser.uid;
                     
-                    // ON RÉCUPÈRE LE PSEUDO DE L'AUTEUR DANS LA BRANCHE USERS
-                    get(ref(db, `users/${v.authorUid}/name`)).then(nameSnap => {
-                        const realName = nameSnap.val() || "Ancien Profil";
+                    // On récupère le displayName de l'auteur en direct
+                    get(ref(db, `users/${v.authorUid}/displayName`)).then(nameSnap => {
+                        const realName = nameSnap.val() || "Anonyme";
                         const wrapper = document.createElement('div');
                         wrapper.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
                         wrapper.innerHTML = `
@@ -289,6 +248,27 @@
                 });
                 e.target.value = "";
             }
+        };
+
+        // REQUESTS
+        function loadRequests() {
+            onValue(ref(db, `requests/${currentUser.uid}`), (snap) => {
+                const list = document.getElementById('requestsList');
+                list.innerHTML = snap.exists() ? "<b>DEMANDES</b>" : "";
+                snap.forEach(c => {
+                    const r = c.val();
+                    const d = document.createElement('div');
+                    d.style = "background:#383a40; padding:10px; border-radius:8px; margin-top:8px; font-size:13px;";
+                    d.innerHTML = `${r.fromName} <button onclick="acceptReq('${r.fromUid}')" style="background:#23a559; border:none; color:white; border-radius:4px; padding:4px 8px; float:right;">OK</button>`;
+                    list.appendChild(d);
+                });
+            });
+        }
+
+        window.acceptReq = async (uid) => {
+            await set(ref(db, `contacts/${currentUser.uid}/${uid}`), { uid: uid });
+            await set(ref(db, `contacts/${uid}/${currentUser.uid}`), { uid: currentUser.uid });
+            await remove(ref(db, `requests/${currentUser.uid}/${uid}`));
         };
     </script>
 </body>
