@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Officiel</title>
+    <title>BP-Contact | Fix Nouveaux Comptes</title>
     <style>
         :root {
             --bg-main: #1e1f22;
@@ -22,7 +22,6 @@
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-main); color: var(--text-main); overflow: hidden; position: fixed; }
         .app-container { display: flex; height: 100vh; height: -webkit-fill-available; width: 100vw; }
 
-        /* Sidebars */
         .side-panels { display: flex; height: 100%; transition: transform 0.3s ease; z-index: 1000; flex-shrink: 0; }
         .contacts-bar { width: 72px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; }
         .bp-logo { width: 48px; height: 48px; background: var(--accent); border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: white; }
@@ -35,15 +34,13 @@
         .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
         .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; justify-content: space-between; }
 
-        /* Section Demandes */
-        #requestsList { padding: 10px 15px; border-bottom: 1px solid #1e1f22; max-height: 150px; overflow-y: auto; }
-        .request-item { background: #383a40; padding: 8px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        #requestsList { padding: 10px 15px; border-bottom: 1px solid #1e1f22; }
+        .request-item { background: #383a40; padding: 8px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
         .accept-btn { background: var(--online); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-        /* Chat */
         .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); min-width: 0; height: 100%; }
         .chat-header { height: 50px; padding: 0 15px; display: flex; align-items: center; border-bottom: 1px solid #26272d; font-weight: bold; }
-        #mobileMenuBtn { display: none; background: none; border: none; color: var(--text-muted); font-size: 28px; cursor: pointer; margin-right: 10px; padding: 0; }
+        #mobileMenuBtn { display: none; background: none; border: none; color: var(--text-muted); font-size: 28px; cursor: pointer; margin-right: 10px; }
 
         #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
         .input-box { padding: 20px; background: var(--bg-chat); }
@@ -53,7 +50,7 @@
         .msg-wrapper { display: flex; flex-direction: column; max-width: 80%; }
         .msg-me { align-self: flex-end; align-items: flex-end; }
         .msg-friend { align-self: flex-start; align-items: flex-start; }
-        .bubble { padding: 10px 16px; border-radius: 18px; font-size: 15px; word-wrap: break-word; }
+        .bubble { padding: 10px 16px; border-radius: 18px; font-size: 15px; word-wrap: break-word; line-height: 1.4; }
         .msg-me .bubble { background: var(--msg-me); color: white; border-bottom-right-radius: 4px; }
         .msg-friend .bubble { background: var(--msg-friend); color: var(--text-main); border-bottom-left-radius: 4px; }
 
@@ -90,7 +87,7 @@
 
     <div id="addModal" class="overlay hidden">
         <div class="card">
-            <h3>Nouveau Contact</h3>
+            <h3>Demande de contact</h3>
             <input type="email" id="friendEmail" placeholder="email@exemple.com">
             <button class="btn" id="sendInviteBtn">Envoyer la demande</button>
             <button class="btn" style="background:#4e5058;" onclick="document.getElementById('addModal').classList.add('hidden')">Fermer</button>
@@ -118,7 +115,7 @@
         <main class="chat-area">
             <header class="chat-header">
                 <button id="mobileMenuBtn">☰</button>
-                <span id="chatTitle">Sélectionnez une discussion</span>
+                <span id="chatTitle">Sélectionnez un contact</span>
             </header>
             <div id="messages"></div>
             <div class="input-box">
@@ -131,7 +128,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove, update, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -164,8 +161,23 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                const snap = await get(query(ref(db, 'users'), orderByChild('email'), equalTo(user.email.toLowerCase())));
-                myId = snap.exists() ? Object.keys(snap.val())[0] : user.uid;
+                myId = user.uid; // Utilisation directe de l'UID Firebase pour la fiabilité
+
+                // --- AUTO-CRÉATION / MISE À JOUR DU PROFIL ---
+                const userRef = ref(db, `users/${myId}`);
+                const userSnap = await get(userRef);
+                const userData = {
+                    uid: myId,
+                    email: user.email.toLowerCase(),
+                    displayName: user.displayName || user.email.split('@')[0]
+                };
+                
+                if (!userSnap.exists()) {
+                    await set(userRef, userData);
+                } else {
+                    await update(userRef, userData);
+                }
+
                 document.getElementById('loginOverlay').classList.add('hidden');
                 loadContacts();
                 loadRequests();
@@ -175,18 +187,41 @@
             }
         });
 
-        // DEMANDES DE CONTACT
+        // RECHERCHE AMÉLIORÉE
+        document.getElementById('sendInviteBtn').onclick = async () => {
+            const emailInput = document.getElementById('friendEmail').value.trim().toLowerCase();
+            if(!emailInput) return;
+
+            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(emailInput));
+            const snap = await get(q);
+            
+            if (snap.exists()) {
+                const targetId = Object.keys(snap.val())[0];
+                if(targetId === myId) { alert("Vous ne pouvez pas vous ajouter vous-même."); return; }
+
+                const myProfile = await get(ref(db, `users/${myId}`));
+                await set(ref(db, `requests/${targetId}/${myId}`), {
+                    fromUid: myId,
+                    fromName: myProfile.val().displayName,
+                    at: Date.now()
+                });
+                alert("Demande de contact envoyée !");
+                document.getElementById('addModal').classList.add('hidden');
+            } else {
+                alert("Utilisateur introuvable. Assurez-vous qu'il s'est déjà connecté au moins une fois.");
+            }
+        };
+
         function loadRequests() {
             onValue(ref(db, `requests/${myId}`), (snap) => {
                 const list = document.getElementById('requestsList');
                 list.innerHTML = "";
                 if (snap.exists()) {
-                    list.innerHTML = `<div style="font-size:11px; color:var(--online); font-weight:bold; margin-bottom:10px;">DEMANDES EN ATTENTE</div>`;
+                    list.innerHTML = `<div style="font-size:10px; color:var(--online); font-weight:bold; margin-bottom:8px;">DEMANDES REÇUES</div>`;
                     snap.forEach(child => {
-                        const data = child.val();
                         const div = document.createElement('div');
                         div.className = "request-item";
-                        div.innerHTML = `<span>${data.fromName}</span> <button class="accept-btn">ACCEPTER</button>`;
+                        div.innerHTML = `<span>${child.val().fromName}</span> <button class="accept-btn">ACCEPTER</button>`;
                         div.querySelector('button').onclick = async () => {
                             await set(ref(db, `contacts/${myId}/${child.key}`), { uid: child.key });
                             await set(ref(db, `contacts/${child.key}/${myId}`), { uid: myId });
@@ -198,28 +233,18 @@
             });
         }
 
-        document.getElementById('sendInviteBtn').onclick = async () => {
-            const email = document.getElementById('friendEmail').value.trim().toLowerCase();
-            const snap = await get(query(ref(db, 'users'), orderByChild('email'), equalTo(email)));
-            if (snap.exists()) {
-                const targetId = Object.keys(snap.val())[0];
-                const me = await get(ref(db, `users/${myId}/displayName`));
-                await set(ref(db, `requests/${targetId}/${myId}`), { fromUid: myId, fromName: me.val() || currentUser.email, at: Date.now() });
-                alert("Demande envoyée !");
-                document.getElementById('addModal').classList.add('hidden');
-            } else { alert("Utilisateur introuvable."); }
-        };
-
-        // CONTACTS
         function loadContacts() {
             onValue(ref(db, `contacts/${myId}`), (snap) => {
                 const iconList = document.getElementById('contactsIconsList');
                 const nameList = document.getElementById('contactsListNames');
                 iconList.innerHTML = ""; nameList.innerHTML = "";
+                
                 snap.forEach(c => {
                     const fid = c.val().uid;
                     get(ref(db, `users/${fid}`)).then(uSnap => {
-                        const name = uSnap.val().displayName || uSnap.val().email.split('@')[0];
+                        if(!uSnap.exists()) return;
+                        const name = uSnap.val().displayName;
+                        
                         const icon = document.createElement('div');
                         icon.className = "contact-circle"; icon.id = "icon-" + fid;
                         icon.innerHTML = `${name[0]}<div class="notif-dot"></div>`;
@@ -263,11 +288,10 @@
                 const mDiv = document.getElementById('messages');
                 mDiv.innerHTML = "";
                 snap.forEach(m => {
-                    const v = m.val();
-                    const isMe = v.authorUid === myId;
+                    const isMe = m.val().authorUid === myId;
                     const wrap = document.createElement('div');
                     wrap.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
-                    wrap.innerHTML = `<div class="bubble">${v.text}</div>`;
+                    wrap.innerHTML = `<div class="bubble">${m.val().text}</div>`;
                     mDiv.appendChild(wrap);
                 });
                 mDiv.scrollTop = mDiv.scrollHeight;
@@ -282,11 +306,11 @@
             }
         };
 
-        // UI Logic
         document.getElementById('mobileMenuBtn').onclick = () => document.getElementById('sidePanels').classList.add('open');
         document.getElementById('bpMenuClose').onclick = () => document.getElementById('sidePanels').classList.remove('open');
         document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
         document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.reload());
+        document.getElementById('notifBtn').onclick = () => Notification.requestPermission().then(p => { if(p==='granted') document.getElementById('notifBtn').classList.add('active'); });
     </script>
 </body>
 </html>
