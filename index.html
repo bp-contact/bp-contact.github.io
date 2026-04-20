@@ -22,21 +22,22 @@
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-main); color: var(--text-main); overflow: hidden; position: fixed; }
         .app-container { display: flex; height: 100vh; width: 100vw; }
 
-        /* Sidebar & Navigation */
+        /* Sidebar & Nav */
         .side-panels { display: flex; height: 100%; transition: transform 0.3s ease; z-index: 1000; flex-shrink: 0; }
         .contacts-bar { width: 72px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; }
         .bp-logo { width: 48px; height: 48px; background: var(--accent); border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: white; }
         .contact-circle { width: 48px; height: 48px; background: var(--bg-sidebar); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; text-transform: uppercase; border: 2px solid transparent; }
         .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
 
-        /* Contenu Principal */
+        /* Main Content */
         .main-content { flex: 1; position: relative; height: 100%; background: var(--bg-chat); display: flex; flex-direction: column; min-width: 0; }
 
-        /* Style des Cartes (Accueil & Voir Plus) */
+        /* Style des Cartes Accueil */
         .scroll-page { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
         .contact-card { 
             background: white; border-radius: 20px; padding: 15px 20px; color: #333; 
             display: flex; align-items: center; gap: 15px; margin-top: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
         }
         .user-icon-wrap { width: 50px; height: 50px; background: #444; border-radius: 50%; position: relative; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; flex-shrink: 0; }
         .status-dot { position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; }
@@ -55,10 +56,8 @@
 
         /* Barre de chat FIXE en bas */
         .chat-input-area { 
-            padding: 15px; 
-            background: var(--bg-chat); 
-            border-top: 1px solid #26272d;
-            margin-bottom: env(safe-area-inset-bottom);
+            padding: 15px; background: var(--bg-chat); border-top: 1px solid #26272d;
+            padding-bottom: calc(15px + env(safe-area-inset-bottom));
         }
         .input-wrap { background: #383a40; border-radius: 12px; padding: 8px 15px; display: flex; align-items: center; gap: 10px; }
         #userInput { background: transparent; border: none; color: white; flex: 1; outline: none; font-size: 16px; height: 35px; }
@@ -86,7 +85,16 @@
             <h2>BlocPlay</h2>
             <input type="email" id="email" placeholder="Email" style="width:100%; padding:12px; margin:10px 0; border-radius:8px; border:none; background:#1e1f22; color:white;">
             <input type="password" id="pass" placeholder="Mot de passe" style="width:100%; padding:12px; margin-bottom:20px; border-radius:8px; border:none; background:#1e1f22; color:white;">
-            <button id="loginBtn" style="width:100%; padding:12px; background:var(--accent); color:white; border:none; border-radius:8px; font-weight:bold;">CONNEXION</button>
+            <button id="loginBtn" style="width:100%; padding:12px; background:var(--accent); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">CONNEXION</button>
+        </div>
+    </div>
+
+    <div id="addModal" class="overlay-full hidden">
+        <div class="auth-card">
+            <h3>Ajouter</h3>
+            <input type="email" id="friendEmail" placeholder="Email du contact" style="width:100%; padding:12px; border-radius:8px; border:none; background:#1e1f22; color:white;">
+            <button id="sendInviteBtn" style="width:100%; margin-top:15px; padding:12px; background:var(--accent); color:white; border:none; border-radius:8px;">Envoyer</button>
+            <button onclick="document.getElementById('addModal').classList.add('hidden')" style="background:none; border:none; color:var(--text-muted); margin-top:15px;">Annuler</button>
         </div>
     </div>
 
@@ -100,51 +108,31 @@
             <aside class="sidebar-info">
                 <div style="padding:20px; font-weight:bold; border-bottom:1px solid #1e1f22;">DEMANDES</div>
                 <div id="requestsList" style="padding:10px; overflow-y:auto; flex:1;"></div>
-                <button onclick="auth.signOut().then(()=>location.reload())" style="padding:20px; color:var(--danger); background:none; border:none; text-align:left; cursor:pointer;">DÉCONNEXION</button>
+                <button onclick="location.reload()" style="padding:20px; color:var(--danger); background:none; border:none; text-align:left; cursor:pointer; font-weight:bold;">DÉCONNEXION</button>
             </aside>
         </div>
 
         <div class="main-content">
             <div id="homePage" class="scroll-page">
-                <div style="display:flex; align-items:center; font-size:24px; color:white; font-weight:bold;">
-                    <button class="hamburger" onclick="toggleMenu()">☰</button> Contacts
-                </div>
+                <div style="display:flex; align-items:center; font-size:24px; color:white; font-weight:bold;"><button class="hamburger" onclick="toggleMenu()">☰</button> Contacts</div>
                 <section>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span id="onLabel" style="font-size:18px;">En ligne (0) :</span>
-                        <span class="view-more" onclick="openSeeMore('online')">Voir plus ></span>
-                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;"><span id="onLabel">En ligne (0) :</span><span class="view-more" onclick="openSeeMore('online')">Voir plus ></span></div>
                     <div id="onPreview"></div>
                 </section>
                 <section>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span id="offLabel" style="font-size:18px;">Hors ligne (0) :</span>
-                        <span class="view-more" onclick="openSeeMore('offline')">Voir plus ></span>
-                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;"><span id="offLabel">Hors ligne (0) :</span><span class="view-more" onclick="openSeeMore('offline')">Voir plus ></span></div>
                     <div id="offPreview"></div>
                 </section>
             </div>
 
             <div id="chatPage">
-                <header style="height:60px; padding:0 15px; display:flex; align-items:center; border-bottom:1px solid #26272d;">
-                    <button class="hamburger" onclick="toggleMenu()">☰</button>
-                    <span id="chatTitle" style="font-weight:bold;">Pseudo</span>
-                </header>
+                <header style="height:60px; padding:0 15px; display:flex; align-items:center; border-bottom:1px solid #26272d;"><button class="hamburger" onclick="toggleMenu()">☰</button><span id="chatTitle" style="font-weight:bold; margin-left:10px;">Pseudo</span></header>
                 <div id="messages"></div>
-                <div class="chat-input-area">
-                    <div class="input-wrap">
-                        <input type="text" id="userInput" placeholder="Écrire un message...">
-                        <button id="sendBtn" style="background:var(--accent); color:white; border:none; border-radius:50%; width:35px; height:35px; cursor:pointer;">➤</button>
-                    </div>
-                </div>
+                <div class="chat-input-area"><div class="input-wrap"><input type="text" id="userInput" placeholder="Écrire..."><button id="sendBtn" style="background:var(--accent); color:white; border:none; border-radius:50%; width:35px; height:35px;">➤</button></div></div>
             </div>
 
             <div id="seeMoreOverlay">
-                <div style="display:flex; align-items:center; margin-bottom:20px;">
-                    <button class="hamburger" onclick="toggleMenu()">☰</button>
-                    <span id="seeMoreTitle" style="font-size:22px; font-weight:bold;">Liste</span>
-                    <button onclick="closeSeeMore()" style="margin-left:auto; background:none; border:none; color:var(--accent); font-weight:bold;">Fermer</button>
-                </div>
+                <div style="display:flex; align-items:center; margin-bottom:20px;"><button class="hamburger" onclick="toggleMenu()">☰</button><span id="seeMoreTitle" style="font-size:22px; font-weight:bold; margin-left:10px;">Liste</span><button onclick="closeSeeMore()" style="margin-left:auto; background:none; border:none; color:var(--accent); font-weight:bold;">Fermer</button></div>
                 <div id="seeMoreGrid" style="display:flex; flex-direction:column; gap:12px;"></div>
             </div>
         </div>
@@ -185,7 +173,7 @@
             document.getElementById('homePage').style.display = 'flex';
             document.getElementById('chatPage').style.display = 'none';
             document.getElementById('seeMoreOverlay').style.display = 'none';
-            activeChatId = null;
+            document.getElementById('sidePanels').classList.remove('open');
         };
 
         function loadContacts() {
@@ -197,13 +185,10 @@
                     onValue(ref(db, `users/${fid}`), (uSnap) => {
                         const data = uSnap.val(); if(!data) return;
                         contactsList = contactsList.filter(u => u.uid !== fid); contactsList.push(data);
-                        
-                        // Icon Sidebar
                         const icon = document.createElement('div');
                         icon.className = "contact-circle"; icon.innerText = data.displayName[0];
                         icon.onclick = () => openChat(fid, data.displayName);
                         iconList.appendChild(icon);
-
                         updateDashboard();
                     });
                 });
@@ -215,23 +200,12 @@
             const offArr = contactsList.filter(u => u.status === 'offline');
             document.getElementById('onLabel').innerText = `En ligne (${onArr.length}) :`;
             document.getElementById('offLabel').innerText = `Hors ligne (${offArr.length}) :`;
-
             const card = (u) => `<div class="contact-card" onclick="openChat('${u.uid}', '${u.displayName}')"><div class="user-icon-wrap">${u.displayName[0]}<div class="status-dot ${u.status}"></div></div><div class="user-name-big">${u.displayName}</div></div>`;
             document.getElementById('onPreview').innerHTML = onArr.length ? card(onArr[0]) : "";
             document.getElementById('offPreview').innerHTML = offArr.length ? card(offArr[0]) : "";
         }
 
-        window.openSeeMore = (type) => {
-            const grid = document.getElementById('seeMoreGrid'); grid.innerHTML = "";
-            document.getElementById('seeMoreOverlay').style.display = 'flex';
-            document.getElementById('seeMoreTitle').innerText = type === 'online' ? "En ligne" : "Hors ligne";
-            contactsList.filter(c => c.status === type).forEach(c => {
-                grid.innerHTML += `<div class="contact-card" onclick="openChat('${c.uid}', '${c.displayName}')"><div class="user-icon-wrap">${c.displayName[0]}<div class="status-dot ${c.status}"></div></div><div class="user-name-big">${c.displayName}</div></div>`;
-            });
-        };
-        window.closeSeeMore = () => document.getElementById('seeMoreOverlay').style.display = 'none';
-
-        function openChat(friendId, friendName) {
+        window.openChat = (friendId, friendName) => {
             const ids = [myId, friendId].sort();
             activeChatId = ids[0] + "_" + ids[1];
             document.getElementById('chatTitle').innerText = friendName;
@@ -247,13 +221,22 @@
                 });
                 mDiv.scrollTop = mDiv.scrollHeight;
             });
-        }
+        };
+
+        window.openSeeMore = (type) => {
+            const grid = document.getElementById('seeMoreGrid'); grid.innerHTML = "";
+            document.getElementById('seeMoreOverlay').style.display = 'flex';
+            contactsList.filter(c => c.status === type).forEach(c => {
+                grid.innerHTML += `<div class="contact-card" onclick="openChat('${c.uid}', '${c.displayName}')"><div class="user-icon-wrap">${c.displayName[0]}<div class="status-dot ${c.status}"></div></div><div class="user-name-big">${c.displayName}</div></div>`;
+            });
+        };
+        window.closeSeeMore = () => document.getElementById('seeMoreOverlay').style.display = 'none';
 
         function loadRequests() {
             onValue(ref(db, `requests/${myId}`), (snap) => {
                 const list = document.getElementById('requestsList'); list.innerHTML = "";
                 snap.forEach(c => {
-                    list.innerHTML += `<div style="padding:12px; background:#383a40; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;"><span>${c.val().fromName}</span><button onclick="accept('${c.key}')" style="background:var(--online); color:white; border:none; padding:5px 10px; border-radius:5px;">OK</button></div>`;
+                    list.innerHTML += `<div style="padding:10px; background:#383a40; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;"><span>${c.val().fromName}</span><button onclick="accept('${c.key}')" style="background:var(--online); color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">OK</button></div>`;
                 });
             });
         }
@@ -270,7 +253,23 @@
             document.getElementById('userInput').value = "";
         };
 
-        document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
+        document.getElementById('loginBtn').onclick = () => {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            signInWithEmailAndPassword(auth, e, p).catch(err => alert("Erreur : " + err.message));
+        };
+
+        document.getElementById('sendInviteBtn').onclick = async () => {
+            const email = document.getElementById('friendEmail').value.trim().toLowerCase();
+            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
+            const snap = await get(q);
+            if(snap.exists()){
+                const tid = Object.keys(snap.val())[0];
+                const me = await get(ref(db, `users/${myId}`));
+                await set(ref(db, `requests/${tid}/${myId}`), { fromUid: myId, fromName: me.val().displayName });
+                alert("Demande envoyée !"); document.getElementById('addModal').classList.add('hidden');
+            }
+        };
     </script>
 </body>
 </html>
