@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Fix Nouveaux Comptes</title>
+    <title>BP-Contact | Design Purifié</title>
     <style>
         :root {
             --bg-main: #1e1f22;
@@ -22,6 +22,7 @@
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-main); color: var(--text-main); overflow: hidden; position: fixed; }
         .app-container { display: flex; height: 100vh; height: -webkit-fill-available; width: 100vw; }
 
+        /* Sidebars */
         .side-panels { display: flex; height: 100%; transition: transform 0.3s ease; z-index: 1000; flex-shrink: 0; }
         .contacts-bar { width: 72px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; }
         .bp-logo { width: 48px; height: 48px; background: var(--accent); border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: white; }
@@ -32,12 +33,14 @@
         .notif-dot.active { display: block; }
 
         .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
-        .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; justify-content: space-between; }
+        .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; }
 
-        #requestsList { padding: 10px 15px; border-bottom: 1px solid #1e1f22; }
+        /* Section Demandes */
+        #requestsList { padding: 10px 15px; }
         .request-item { background: #383a40; padding: 8px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
         .accept-btn { background: var(--online); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
+        /* Chat Area */
         .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); min-width: 0; height: 100%; }
         .chat-header { height: 50px; padding: 0 15px; display: flex; align-items: center; border-bottom: 1px solid #26272d; font-weight: bold; }
         #mobileMenuBtn { display: none; background: none; border: none; color: var(--text-muted); font-size: 28px; cursor: pointer; margin-right: 10px; }
@@ -68,8 +71,6 @@
         .card input { width: 100%; padding: 12px; background: #1e1f22; border: 1px solid #444; border-radius: 8px; color: white; margin: 10px 0; outline: none; }
         .btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; margin-top: 10px; }
         .hidden { display: none !important; }
-        #notifBtn { font-size: 18px; cursor: pointer; background: none; border: none; opacity: 0.3; }
-        #notifBtn.active { opacity: 1; }
     </style>
 </head>
 <body>
@@ -103,12 +104,10 @@
             </nav>
             <aside class="sidebar-info">
                 <div class="sidebar-header">
-                    <span>Contacts</span>
-                    <button id="notifBtn">🔔</button>
+                    <span>Demandes</span>
                 </div>
                 <div id="requestsList"></div>
-                <div id="contactsListNames" style="padding:15px; flex:1; overflow-y:auto;"></div>
-                <button id="logoutBtn" style="padding:15px; background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold; text-align:left;">DÉCONNEXION</button>
+                <div style="flex:1;"></div> <button id="logoutBtn" style="padding:15px; background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold; text-align:left;">DÉCONNEXION</button>
             </aside>
         </div>
 
@@ -161,9 +160,7 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                myId = user.uid; // Utilisation directe de l'UID Firebase pour la fiabilité
-
-                // --- AUTO-CRÉATION / MISE À JOUR DU PROFIL ---
+                myId = user.uid;
                 const userRef = ref(db, `users/${myId}`);
                 const userSnap = await get(userRef);
                 const userData = {
@@ -171,12 +168,8 @@
                     email: user.email.toLowerCase(),
                     displayName: user.displayName || user.email.split('@')[0]
                 };
-                
-                if (!userSnap.exists()) {
-                    await set(userRef, userData);
-                } else {
-                    await update(userRef, userData);
-                }
+                if (!userSnap.exists()) await set(userRef, userData);
+                else await update(userRef, userData);
 
                 document.getElementById('loginOverlay').classList.add('hidden');
                 loadContacts();
@@ -187,29 +180,23 @@
             }
         });
 
-        // RECHERCHE AMÉLIORÉE
         document.getElementById('sendInviteBtn').onclick = async () => {
             const emailInput = document.getElementById('friendEmail').value.trim().toLowerCase();
             if(!emailInput) return;
-
             const q = query(ref(db, 'users'), orderByChild('email'), equalTo(emailInput));
             const snap = await get(q);
-            
             if (snap.exists()) {
                 const targetId = Object.keys(snap.val())[0];
-                if(targetId === myId) { alert("Vous ne pouvez pas vous ajouter vous-même."); return; }
-
+                if(targetId === myId) return;
                 const myProfile = await get(ref(db, `users/${myId}`));
                 await set(ref(db, `requests/${targetId}/${myId}`), {
                     fromUid: myId,
                     fromName: myProfile.val().displayName,
                     at: Date.now()
                 });
-                alert("Demande de contact envoyée !");
+                alert("Demande envoyée !");
                 document.getElementById('addModal').classList.add('hidden');
-            } else {
-                alert("Utilisateur introuvable. Assurez-vous qu'il s'est déjà connecté au moins une fois.");
-            }
+            } else { alert("Utilisateur introuvable."); }
         };
 
         function loadRequests() {
@@ -217,11 +204,10 @@
                 const list = document.getElementById('requestsList');
                 list.innerHTML = "";
                 if (snap.exists()) {
-                    list.innerHTML = `<div style="font-size:10px; color:var(--online); font-weight:bold; margin-bottom:8px;">DEMANDES REÇUES</div>`;
                     snap.forEach(child => {
                         const div = document.createElement('div');
                         div.className = "request-item";
-                        div.innerHTML = `<span>${child.val().fromName}</span> <button class="accept-btn">ACCEPTER</button>`;
+                        div.innerHTML = `<span>${child.val().fromName}</span> <button class="accept-btn">OK</button>`;
                         div.querySelector('button').onclick = async () => {
                             await set(ref(db, `contacts/${myId}/${child.key}`), { uid: child.key });
                             await set(ref(db, `contacts/${child.key}/${myId}`), { uid: myId });
@@ -236,26 +222,17 @@
         function loadContacts() {
             onValue(ref(db, `contacts/${myId}`), (snap) => {
                 const iconList = document.getElementById('contactsIconsList');
-                const nameList = document.getElementById('contactsListNames');
-                iconList.innerHTML = ""; nameList.innerHTML = "";
-                
+                iconList.innerHTML = ""; 
                 snap.forEach(c => {
                     const fid = c.val().uid;
                     get(ref(db, `users/${fid}`)).then(uSnap => {
                         if(!uSnap.exists()) return;
                         const name = uSnap.val().displayName;
-                        
                         const icon = document.createElement('div');
                         icon.className = "contact-circle"; icon.id = "icon-" + fid;
                         icon.innerHTML = `${name[0]}<div class="notif-dot"></div>`;
                         icon.onclick = () => { openChat(fid, name); icon.querySelector('.notif-dot').classList.remove('active'); };
                         iconList.appendChild(icon);
-
-                        const nDiv = document.createElement('div');
-                        nDiv.style = "padding:12px; cursor:pointer; background:#2b2d31; border-radius:8px; margin-bottom:5px; font-weight:500;";
-                        nDiv.innerText = name;
-                        nDiv.onclick = () => openChat(fid, name);
-                        nameList.appendChild(nDiv);
                         listenMsgs(fid, name);
                     });
                 });
@@ -310,7 +287,6 @@
         document.getElementById('bpMenuClose').onclick = () => document.getElementById('sidePanels').classList.remove('open');
         document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
         document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.reload());
-        document.getElementById('notifBtn').onclick = () => Notification.requestPermission().then(p => { if(p==='granted') document.getElementById('notifBtn').classList.add('active'); });
     </script>
 </body>
 </html>
