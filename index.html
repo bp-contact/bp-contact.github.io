@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Dashboard Final</title>
+    <title>BP-Contact | Pro</title>
     <style>
         :root {
             --bg-main: #1e1f22;
@@ -28,29 +28,27 @@
         .bp-logo { width: 48px; height: 48px; background: var(--accent); border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: white; }
         
         .contact-circle { position: relative; width: 48px; height: 48px; background: var(--bg-sidebar); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; font-size: 18px; text-transform: uppercase; }
-        .notif-dot { position: absolute; top: 0; right: 0; width: 14px; height: 14px; background: var(--danger); border-radius: 50%; border: 3px solid var(--bg-main); display: none; }
-        .notif-dot.active { display: block; }
-
         .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
-        #requestsList { padding: 10px 15px; }
 
-        /* Accueil (Style Capture) */
-        #homePage { flex: 1; padding: 20px; overflow-y: auto; background: var(--bg-chat); display: flex; flex-direction: column; gap: 20px; }
-        .status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .status-label { font-size: 20px; color: white; }
-        .view-more { color: var(--text-muted); cursor: pointer; font-size: 14px; }
+        /* Accueil */
+        #homePage { flex: 1; padding: 20px; overflow-y: auto; background: var(--bg-chat); display: flex; flex-direction: column; gap: 25px; position: relative; }
+        .status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .view-more { color: var(--text-muted); cursor: pointer; font-size: 15px; font-weight: 500; }
         
-        .cards-grid { display: flex; flex-direction: column; gap: 10px; }
+        .cards-grid { display: flex; flex-direction: column; gap: 12px; }
         .contact-card { 
-            background: white; border-radius: 20px; padding: 15px 20px; color: #333; 
-            display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s;
+            background: white; border-radius: 25px; padding: 18px 22px; color: #333; 
+            display: flex; align-items: center; gap: 18px; cursor: default;
         }
-        .contact-card:active { transform: scale(0.98); }
-        .user-icon-wrap { width: 50px; height: 50px; background: #555; border-radius: 50%; position: relative; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; }
-        .status-dot { position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; }
+        .user-icon-wrap { width: 55px; height: 55px; background: #555; border-radius: 50%; position: relative; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 22px; }
+        .status-dot { position: absolute; bottom: 0; right: 2px; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; }
         .status-dot.online { background: #23a559; }
         .status-dot.offline { background: #808080; }
-        .user-name-big { font-size: 24px; color: #1e1f22; }
+        .user-name-big { font-size: 28px; color: #1e1f22; font-weight: 400; }
+
+        /* Page Voir Plus (Overlay interne) */
+        #seeMorePage { position: absolute; inset: 0; background: var(--bg-chat); z-index: 500; padding: 20px; display: none; flex-direction: column; gap: 20px; }
+        .back-btn { background: none; border: none; color: white; font-size: 18px; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 0; margin-bottom: 10px; }
 
         /* Chat & Messages */
         .chat-area { flex: 1; display: none; flex-direction: column; background: var(--bg-chat); height: 100%; }
@@ -93,7 +91,7 @@
     </div>
 
     <div id="addModal" class="overlay hidden">
-        <div class="card"><h3>Ajouter un email</h3><input type="email" id="friendEmail" style="width:100%; padding:10px;"><button id="sendInviteBtn" style="width:100%; margin-top:10px; padding:10px; background:var(--accent); color:white; border:none; border-radius:5px;">Envoyer</button></div>
+        <div class="card"><h3>Nouveau Contact</h3><input type="email" id="friendEmail" style="width:100%; padding:10px;"><button id="sendInviteBtn" style="width:100%; margin-top:10px; padding:10px; background:var(--accent); color:white; border:none; border-radius:5px;">Envoyer</button></div>
     </div>
 
     <div class="app-container">
@@ -106,19 +104,25 @@
             <aside class="sidebar-info">
                 <div style="padding:15px; font-weight:bold; border-bottom:1px solid #1e1f22;">Demandes</div>
                 <div id="requestsList"></div>
-                <button onclick="auth.signOut().then(()=>location.reload())" style="margin-top:auto; padding:20px; background:none; border:none; color:var(--danger); cursor:pointer; text-align:left;">DÉCONNEXION</button>
+                <button onclick="location.reload()" style="margin-top:auto; padding:20px; background:none; border:none; color:var(--danger); cursor:pointer; text-align:left;">DÉCONNEXION</button>
             </aside>
         </div>
 
         <main id="homePage">
-            <div style="display:flex; align-items:center; gap:10px; font-size:24px; color:white;">
+            <div id="seeMorePage">
+                <button class="back-btn" onclick="closeSeeMore()"> < Voir plus </button>
+                <div class="status-label" id="seeMoreTitle">...</div>
+                <div class="cards-grid" id="seeMoreGrid"></div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:10px; font-size:24px; color:white; margin-bottom:10px;">
                 <button onclick="document.getElementById('sidePanels').classList.add('open')" style="background:none; border:none; color:white; font-size:24px;">☰</button> Contacts
             </div>
 
             <section>
                 <div class="status-header">
                     <div class="status-label" id="onlineLabel">En ligne (0) :</div>
-                    <div class="view-more" onclick="toggleFilter('online')">Voir plus ></div>
+                    <div class="view-more" onclick="openSeeMore('online')">Voir plus ></div>
                 </div>
                 <div class="cards-grid" id="onlineGrid"></div>
             </section>
@@ -126,16 +130,16 @@
             <section>
                 <div class="status-header">
                     <div class="status-label" id="offlineLabel">Hors ligne (0) :</div>
-                    <div class="view-more" onclick="toggleFilter('offline')">Voir plus ></div>
+                    <div class="view-more" onclick="openSeeMore('offline')">Voir plus ></div>
                 </div>
                 <div class="cards-grid" id="offlineGrid"></div>
             </section>
         </main>
 
         <main class="chat-area" id="chatPage">
-            <header style="height:50px; padding:0 15px; display:flex; align-items:center; border-bottom:1px solid #26272d; font-weight:bold;">
+            <header style="height:50px; padding:0 15px; display:flex; align-items:center; border-bottom:1px solid #26272d;">
                 <button onclick="showHome()" style="background:none; border:none; color:white; margin-right:10px;">←</button>
-                <span id="chatTitle">Pseudo</span>
+                <span id="chatTitle" style="font-weight:bold;">Pseudo</span>
             </header>
             <div id="messages"></div>
             <div class="input-box">
@@ -165,7 +169,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        let myId = null, activeChatId = null, selectedMsgId = null, currentFilter = 'all';
+        let myId = null, activeChatId = null, selectedMsgId = null;
+        let contactsData = [];
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -182,14 +187,30 @@
             document.getElementById('homePage').style.display = 'flex';
             document.getElementById('chatPage').style.display = 'none';
             document.getElementById('sidePanels').classList.remove('open');
-            currentFilter = 'all';
-            loadContacts();
+            closeSeeMore();
         };
 
-        window.toggleFilter = (type) => {
-            currentFilter = (currentFilter === type) ? 'all' : type;
-            loadContacts();
+        // --- GESTION VOIR PLUS ---
+        window.openSeeMore = (type) => {
+            const page = document.getElementById('seeMorePage');
+            const grid = document.getElementById('seeMoreGrid');
+            const title = document.getElementById('seeMoreTitle');
+            grid.innerHTML = "";
+            page.style.display = 'flex';
+            
+            const filtered = contactsData.filter(c => c.status === type);
+            title.innerText = type === 'online' ? `En ligne (${filtered.length}) :` : `Hors ligne (${filtered.length}) :`;
+            
+            filtered.forEach(c => {
+                grid.innerHTML += `
+                    <div class="contact-card">
+                        <div class="user-icon-wrap">${c.displayName[0]}<div class="status-dot ${c.status}"></div></div>
+                        <div class="user-name-big">${c.displayName}</div>
+                    </div>`;
+            });
         };
+
+        window.closeSeeMore = () => document.getElementById('seeMorePage').style.display = 'none';
 
         function loadContacts() {
             onValue(ref(db, `contacts/${myId}`), (snap) => {
@@ -197,6 +218,7 @@
                 const onlineGrid = document.getElementById('onlineGrid');
                 const offlineGrid = document.getElementById('offlineGrid');
                 iconList.innerHTML = ""; onlineGrid.innerHTML = ""; offlineGrid.innerHTML = "";
+                contactsData = [];
                 
                 let onCount = 0, offCount = 0;
 
@@ -205,29 +227,31 @@
                     onValue(ref(db, `users/${fid}`), (uSnap) => {
                         const data = uSnap.val();
                         if(!data) return;
+                        contactsData.push(data);
 
-                        // Sidebar Icons
+                        // Sidebar Icon
                         const icon = document.createElement('div');
                         icon.className = "contact-circle";
                         icon.innerHTML = `${data.displayName[0]}`;
-                        icon.onclick = () => openChat(fid, data.displayName);
+                        icon.onclick = () => {
+                            openChat(fid, data.displayName);
+                            document.getElementById('sidePanels').classList.remove('open'); // Masque le menu sur mobile
+                        };
                         iconList.appendChild(icon);
 
-                        // Card Generation
-                        const card = document.createElement('div');
-                        card.className = "contact-card";
-                        card.onclick = () => openChat(fid, data.displayName);
-                        card.innerHTML = `
-                            <div class="user-icon-wrap">${data.displayName[0]}<div class="status-dot ${data.status}"></div></div>
-                            <div class="user-name-big">${data.displayName}</div>
-                        `;
+                        // Accueil Cards (Limité à 1 pour le style "Voir plus")
+                        const cardHtml = `
+                            <div class="contact-card">
+                                <div class="user-icon-wrap">${data.displayName[0]}<div class="status-dot ${data.status}"></div></div>
+                                <div class="user-name-big">${data.displayName}</div>
+                            </div>`;
 
                         if(data.status === "online") {
                             onCount++;
-                            if(currentFilter === 'all' || currentFilter === 'online') onlineGrid.appendChild(card);
+                            if(onCount <= 1) onlineGrid.innerHTML += cardHtml;
                         } else {
                             offCount++;
-                            if(currentFilter === 'all' || currentFilter === 'offline') offlineGrid.appendChild(card);
+                            if(offCount <= 1) offlineGrid.innerHTML += cardHtml;
                         }
                         document.getElementById('onlineLabel').innerText = `En ligne (${onCount}) :`;
                         document.getElementById('offlineLabel').innerText = `Hors ligne (${offCount}) :`;
@@ -262,7 +286,7 @@
         window.editMsg = () => { const t = prompt("Nouveau texte :"); if(t) update(ref(db, `chats/${activeChatId}/${selectedMsgId}`), { text: t + " (modifié)" }); };
 
         document.getElementById('sendBtn').onclick = () => {
-            const val = document.getElementById('userInput').value;
+            const val = document.getElementById('userInput').value.trim();
             if(val) push(ref(db, `chats/${activeChatId}`), { authorUid: myId, text: val });
             document.getElementById('userInput').value = "";
         };
@@ -272,8 +296,8 @@
                 const list = document.getElementById('requestsList'); list.innerHTML = "";
                 snap.forEach(child => {
                     const div = document.createElement('div');
-                    div.style = "padding:10px; background:#383a40; margin:5px; border-radius:5px; display:flex; justify-content:space-between;";
-                    div.innerHTML = `<span>${child.val().fromName}</span><button onclick="accept('${child.key}')">OK</button>`;
+                    div.style = "padding:10px; background:#383a40; margin:5px; border-radius:5px; display:flex; justify-content:space-between; align-items:center; font-size:12px;";
+                    div.innerHTML = `<span>${child.val().fromName}</span><button style="background:var(--online); border:none; color:white; border-radius:4px; padding:4px 8px;" onclick="accept('${child.key}')">OK</button>`;
                     list.appendChild(div);
                 });
             });
@@ -300,4 +324,4 @@
         document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
     </script>
 </body>
-</html>
+                </html>
