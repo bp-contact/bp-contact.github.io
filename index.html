@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Final Fix</title>
+    <title>BP-Contact | Pro</title>
     <style>
         :root {
             --bg-main: #1e1f22;
@@ -18,7 +18,7 @@
             --danger: #ed4245;
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-main); color: var(--text-main); overflow: hidden; position: fixed; }
         .app-container { display: flex; height: 100vh; height: -webkit-fill-available; width: 100vw; }
 
@@ -26,7 +26,6 @@
         .side-panels { display: flex; height: 100%; transition: transform 0.3s ease; z-index: 1000; flex-shrink: 0; }
         .contacts-bar { width: 72px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; }
         .bp-logo { width: 48px; height: 48px; background: var(--accent); border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: white; }
-        
         .contact-circle { position: relative; width: 48px; height: 48px; background: var(--bg-sidebar); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; font-size: 18px; text-transform: uppercase; }
         .add-btn { color: var(--online); border: 2px dashed #35363c; font-size: 24px; }
         .notif-dot { position: absolute; top: 0; right: 0; width: 14px; height: 14px; background: var(--danger); border-radius: 50%; border: 3px solid var(--bg-main); display: none; }
@@ -34,70 +33,51 @@
 
         .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
         .sidebar-header { height: 50px; padding: 0 16px; display: flex; align-items: center; font-weight: bold; border-bottom: 1px solid #1e1f22; }
-
         #requestsList { padding: 10px 15px; }
         .request-item { background: #383a40; padding: 8px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
         .accept-btn { background: var(--online); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-        /* Chat Area */
+        /* Chat */
         .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); min-width: 0; height: 100%; }
         .chat-header { height: 50px; padding: 0 15px; display: flex; align-items: center; border-bottom: 1px solid #26272d; font-weight: bold; }
         #mobileMenuBtn { display: none; background: none; border: none; color: var(--text-muted); font-size: 28px; cursor: pointer; margin-right: 10px; }
-
         #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
 
-        /* Correction du retour à la ligne forcé */
-        .msg-wrapper { display: flex; flex-direction: column; max-width: 85%; }
+        .msg-wrapper { display: flex; flex-direction: column; max-width: 85%; position: relative; }
         .msg-me { align-self: flex-end; align-items: flex-end; }
         .msg-friend { align-self: flex-start; align-items: flex-start; }
+        
         .bubble { 
-            padding: 10px 16px; 
-            border-radius: 18px; 
-            font-size: 15px; 
-            line-height: 1.4;
-            /* Force le retour à la ligne même sans espaces */
-            overflow-wrap: anywhere; 
-            word-break: break-word; 
+            padding: 10px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4;
+            overflow-wrap: anywhere; word-break: break-word; cursor: pointer; user-select: none;
         }
         .msg-me .bubble { background: var(--msg-me); color: white; border-bottom-right-radius: 4px; }
         .msg-friend .bubble { background: var(--msg-friend); color: var(--text-main); border-bottom-left-radius: 4px; }
 
-        /* Barre de saisie avec bouton */
-        .input-box { padding: 20px; background: var(--bg-chat); }
-        .input-wrap { 
-            background: #383a40; 
-            border-radius: 8px; 
-            padding: 5px 15px; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px;
-        }
-        #userInput { 
-            background: transparent; 
-            border: none; 
-            color: white; 
-            flex: 1; 
-            outline: none; 
-            font-size: 16px; 
-            height: 40px;
-        }
-        #sendBtn { 
-            background: var(--accent); 
-            color: white; 
-            border: none; 
-            width: 32px; 
-            height: 32px; 
-            border-radius: 50%; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 14px;
-            transition: 0.2s;
-        }
-        #sendBtn:hover { transform: scale(1.1); background: #4752c4; }
+        /* Réactions */
+        .reactions-container { display: flex; gap: 4px; margin-top: -8px; padding: 0 8px; z-index: 2; }
+        .reaction-pill { background: #2b2d31; border: 1px solid #1e1f22; border-radius: 10px; padding: 2px 6px; font-size: 12px; }
 
-        #topAlert { position: fixed; top: -80px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; padding: 12px 25px; border-radius: 30px; z-index: 9999; transition: 0.5s; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-weight: bold; }
+        /* Menu Contextuel */
+        #contextMenu { 
+            position: fixed; background: #111214; border-radius: 8px; padding: 8px; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5); z-index: 3000; display: none; width: 180px; 
+        }
+        .menu-item { padding: 10px; cursor: pointer; border-radius: 4px; font-size: 14px; transition: 0.2s; }
+        .menu-item:hover { background: var(--accent); }
+        .menu-item.danger { color: var(--danger); }
+        .menu-item.danger:hover { background: var(--danger); color: white; }
+        .emoji-row { display: flex; justify-content: space-around; padding: 8px; border-bottom: 1px solid #2b2d31; margin-bottom: 5px; }
+        .emoji-btn { font-size: 20px; cursor: pointer; transition: 0.2s; }
+        .emoji-btn:hover { transform: scale(1.3); }
+
+        /* Barre saisie */
+        .input-box { padding: 20px; background: var(--bg-chat); }
+        .input-wrap { background: #383a40; border-radius: 8px; padding: 5px 15px; display: flex; align-items: center; gap: 10px; }
+        #userInput { background: transparent; border: none; color: white; flex: 1; outline: none; font-size: 16px; height: 40px; }
+        #sendBtn { background: var(--accent); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        #topAlert { position: fixed; top: -80px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; padding: 12px 25px; border-radius: 30px; z-index: 9999; transition: 0.5s; font-weight: bold; }
         #topAlert.show { top: 20px; }
 
         @media (max-width: 768px) {
@@ -113,26 +93,26 @@
         .hidden { display: none !important; }
     </style>
 </head>
-<body>
+<body onclick="hideMenu()">
 
     <div id="topAlert">Nouveau message !</div>
 
-    <div id="loginOverlay" class="overlay">
-        <div class="card">
-            <h2>BlocPlay</h2>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="pass" placeholder="Mot de passe">
-            <button class="btn" id="loginBtn">Connexion</button>
+    <div id="contextMenu">
+        <div class="emoji-row">
+            <span class="emoji-btn" onclick="addReaction('❤️')">❤️</span>
+            <span class="emoji-btn" onclick="addReaction('😂')">😂</span>
+            <span class="emoji-btn" onclick="addReaction('😮')">😮</span>
+            <span class="emoji-btn" onclick="addReaction('👍')">👍</span>
         </div>
+        <div id="editOpt" class="menu-item" onclick="editMsg()">Modifier</div>
+        <div id="delOpt" class="menu-item danger" onclick="deleteMsg()">Supprimer</div>
     </div>
 
+    <div id="loginOverlay" class="overlay">
+        <div class="card"><h2>BlocPlay</h2><input type="email" id="email" placeholder="Email"><input type="password" id="pass" placeholder="Mot de passe"><button class="btn" id="loginBtn">Connexion</button></div>
+    </div>
     <div id="addModal" class="overlay hidden">
-        <div class="card">
-            <h3>Demande de contact</h3>
-            <input type="email" id="friendEmail" placeholder="email@exemple.com">
-            <button class="btn" id="sendInviteBtn">Envoyer la demande</button>
-            <button class="btn" style="background:#4e5058;" onclick="document.getElementById('addModal').classList.add('hidden')">Fermer</button>
-        </div>
+        <div class="card"><h3>Demande de contact</h3><input type="email" id="friendEmail" placeholder="email@exemple.com"><button class="btn" id="sendInviteBtn">Envoyer</button><button class="btn" style="background:#4e5058;" onclick="this.closest('.overlay').classList.add('hidden')">Fermer</button></div>
     </div>
 
     <div class="app-container">
@@ -142,24 +122,16 @@
                 <div id="contactsIconsList" style="display:contents;"></div>
                 <div class="contact-circle add-btn" onclick="document.getElementById('addModal').classList.remove('hidden')">+</div>
             </nav>
-            <aside class="sidebar-info">
-                <div class="sidebar-header"><span>Demandes</span></div>
-                <div id="requestsList"></div>
-                <div style="flex:1;"></div>
-                <button id="logoutBtn" style="padding:15px; background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold; text-align:left;">DÉCONNEXION</button>
-            </aside>
+            <aside class="sidebar-info"><div class="sidebar-header"><span>Demandes</span></div><div id="requestsList"></div><div style="flex:1;"></div><button id="logoutBtn" style="padding:15px; background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold; text-align:left;">DÉCONNEXION</button></aside>
         </div>
 
         <main class="chat-area">
-            <header class="chat-header">
-                <button id="mobileMenuBtn">☰</button>
-                <span id="chatTitle">Sélectionnez un contact</span>
-            </header>
+            <header class="chat-header"><button id="mobileMenuBtn">☰</button><span id="chatTitle">Sélectionnez un contact</span></header>
             <div id="messages"></div>
             <div class="input-box">
                 <div class="input-wrap">
                     <input type="text" id="userInput" placeholder="Écrire un message..." disabled>
-                    <button id="sendBtn" title="Envoyer">➤</button>
+                    <button id="sendBtn">➤</button>
                 </div>
             </div>
         </main>
@@ -185,37 +157,22 @@
         const auth = getAuth(app);
 
         let currentUser = null, myId = null, activeChatId = null;
+        let selectedMsgId = null, longPressTimer = null;
         let knownMsgs = new Set(), firstLoad = true;
-        const pingSfx = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
 
-        function notify(sender, text) {
-            if(navigator.vibrate) navigator.vibrate(200);
-            pingSfx.play().catch(()=>{});
-            const alertBox = document.getElementById('topAlert');
-            alertBox.innerText = `${sender}: ${text}`;
-            alertBox.classList.add('show');
-            setTimeout(() => alertBox.classList.remove('show'), 4000);
-        }
-
+        // --- AUTH & INITIALISATION ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                currentUser = user;
-                myId = user.uid;
+                currentUser = user; myId = user.uid;
                 const userRef = ref(db, `users/${myId}`);
-                const userSnap = await get(userRef);
-                const userData = { uid: myId, email: user.email.toLowerCase(), displayName: user.displayName || user.email.split('@')[0] };
-                if (!userSnap.exists()) await set(userRef, userData);
-                else await update(userRef, userData);
+                await update(userRef, { uid: myId, email: user.email.toLowerCase(), displayName: user.displayName || user.email.split('@')[0] });
                 document.getElementById('loginOverlay').classList.add('hidden');
-                loadContacts();
-                loadRequests();
+                loadContacts(); loadRequests();
                 setTimeout(() => firstLoad = false, 3000);
-            } else {
-                document.getElementById('loginOverlay').classList.remove('hidden');
-            }
+            } else { document.getElementById('loginOverlay').classList.remove('hidden'); }
         });
 
-        // Envoi de message (Fonction unifiée)
+        // --- GESTION MESSAGES ---
         function sendMessage() {
             const val = document.getElementById('userInput').value.trim();
             if(val && activeChatId) {
@@ -223,44 +180,88 @@
                 document.getElementById('userInput').value = "";
             }
         }
-
         document.getElementById('sendBtn').onclick = sendMessage;
         document.getElementById('userInput').onkeydown = (e) => { if(e.key === "Enter") sendMessage(); };
 
-        document.getElementById('sendInviteBtn').onclick = async () => {
-            const emailInput = document.getElementById('friendEmail').value.trim().toLowerCase();
-            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(emailInput));
-            const snap = await get(q);
-            if (snap.exists()) {
-                const targetId = Object.keys(snap.val())[0];
-                if(targetId === myId) return;
-                const myProfile = await get(ref(db, `users/${myId}`));
-                await set(ref(db, `requests/${targetId}/${myId}`), { fromUid: myId, fromName: myProfile.val().displayName, at: Date.now() });
-                alert("Demande envoyée !");
-                document.getElementById('addModal').classList.add('hidden');
-            } else { alert("Utilisateur introuvable."); }
+        // --- MENU CONTEXTUEL (CLIC LONG) ---
+        window.showMenu = (e, msgId, isMe) => {
+            e.preventDefault();
+            selectedMsgId = msgId;
+            const menu = document.getElementById('contextMenu');
+            menu.style.display = 'block';
+            menu.style.left = Math.min(e.pageX, window.innerWidth - 190) + 'px';
+            menu.style.top = Math.min(e.pageY, window.innerHeight - 200) + 'px';
+            
+            document.getElementById('editOpt').style.display = isMe ? 'block' : 'none';
+            document.getElementById('delOpt').style.display = isMe ? 'block' : 'none';
         };
 
-        function loadRequests() {
-            onValue(ref(db, `requests/${myId}`), (snap) => {
-                const list = document.getElementById('requestsList');
-                list.innerHTML = "";
-                if (snap.exists()) {
-                    snap.forEach(child => {
-                        const div = document.createElement('div');
-                        div.className = "request-item";
-                        div.innerHTML = `<span>${child.val().fromName}</span> <button class="accept-btn">OK</button>`;
-                        div.querySelector('button').onclick = async () => {
-                            await set(ref(db, `contacts/${myId}/${child.key}`), { uid: child.key });
-                            await set(ref(db, `contacts/${child.key}/${myId}`), { uid: myId });
-                            await remove(ref(db, `requests/${myId}/${child.key}`));
-                        };
-                        list.appendChild(div);
-                    });
-                }
+        window.hideMenu = () => { document.getElementById('contextMenu').style.display = 'none'; };
+
+        window.deleteMsg = () => {
+            if(confirm("Supprimer ce message ?")) remove(ref(db, `chats/${activeChatId}/${selectedMsgId}`));
+        };
+
+        window.editMsg = () => {
+            const newText = prompt("Modifier le message :");
+            if(newText) update(ref(db, `chats/${activeChatId}/${selectedMsgId}`), { text: newText + " (modifié)" });
+        };
+
+        window.addReaction = (emoji) => {
+            update(ref(db, `chats/${activeChatId}/${selectedMsgId}/reactions`), { [myId]: emoji });
+            hideMenu();
+        };
+
+        // --- AFFICHAGE CHAT ---
+        function openChat(friendId, friendName) {
+            const ids = [String(myId), String(friendId)].sort();
+            activeChatId = ids[0] + "_" + ids[1];
+            document.getElementById('chatTitle').innerText = friendName;
+            document.getElementById('userInput').disabled = false;
+            
+            onValue(ref(db, `chats/${activeChatId}`), (snap) => {
+                const mDiv = document.getElementById('messages');
+                mDiv.innerHTML = "";
+                snap.forEach(m => {
+                    const data = m.val();
+                    const isMe = data.authorUid === myId;
+                    const wrap = document.createElement('div');
+                    wrap.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
+                    
+                    // Bulle
+                    const b = document.createElement('div');
+                    b.className = "bubble";
+                    b.innerText = data.text;
+                    
+                    // Events Clic Long
+                    b.oncontextmenu = (e) => showMenu(e, m.key, isMe);
+                    b.ontouchstart = (e) => { longPressTimer = setTimeout(() => showMenu(e.touches[0], m.key, isMe), 500); };
+                    b.ontouchend = () => clearTimeout(longPressTimer);
+
+                    wrap.appendChild(b);
+
+                    // Affichage Réactions
+                    if(data.reactions) {
+                        const rDiv = document.createElement('div');
+                        rDiv.className = "reactions-container";
+                        const uniqueEmojis = [...new Set(Object.values(data.reactions))];
+                        uniqueEmojis.forEach(em => {
+                            const span = document.createElement('span');
+                            span.className = "reaction-pill";
+                            span.innerText = em;
+                            rDiv.appendChild(span);
+                        });
+                        wrap.appendChild(rDiv);
+                    }
+
+                    mDiv.appendChild(wrap);
+                });
+                mDiv.scrollTop = mDiv.scrollHeight;
             });
+            document.getElementById('sidePanels').classList.remove('open');
         }
 
+        // --- LOGIQUE CONTACTS (CONSERVÉE) ---
         function loadContacts() {
             onValue(ref(db, `contacts/${myId}`), (snap) => {
                 const iconList = document.getElementById('contactsIconsList');
@@ -275,48 +276,41 @@
                         icon.innerHTML = `${name[0]}<div class="notif-dot"></div>`;
                         icon.onclick = () => { openChat(fid, name); icon.querySelector('.notif-dot').classList.remove('active'); };
                         iconList.appendChild(icon);
-                        listenMsgs(fid, name);
                     });
                 });
             });
         }
 
-        function listenMsgs(fid, fname) {
-            const ids = [String(myId), String(fid)].sort();
-            const chatId = ids[0] + "_" + ids[1];
-            onValue(query(ref(db, `chats/${chatId}`), limitToLast(1)), (snap) => {
-                snap.forEach(mChild => {
-                    if (!firstLoad && mChild.val().authorUid !== myId && !knownMsgs.has(mChild.key)) {
-                        if (chatId !== activeChatId) {
-                            notify(fname, mChild.val().text);
-                            const dot = document.querySelector(`#icon-${fid} .notif-dot`);
-                            if(dot) dot.classList.add('active');
-                        }
-                    }
-                    knownMsgs.add(mChild.key);
+        function loadRequests() {
+            onValue(ref(db, `requests/${myId}`), (snap) => {
+                const list = document.getElementById('requestsList');
+                list.innerHTML = "";
+                snap.forEach(child => {
+                    const div = document.createElement('div');
+                    div.className = "request-item";
+                    div.innerHTML = `<span>${child.val().fromName}</span> <button class="accept-btn">OK</button>`;
+                    div.querySelector('button').onclick = async () => {
+                        await set(ref(db, `contacts/${myId}/${child.key}`), { uid: child.key });
+                        await set(ref(db, `contacts/${child.key}/${myId}`), { uid: myId });
+                        await remove(ref(db, `requests/${myId}/${child.key}`));
+                    };
+                    list.appendChild(div);
                 });
             });
         }
 
-        function openChat(friendId, friendName) {
-            const ids = [String(myId), String(friendId)].sort();
-            activeChatId = ids[0] + "_" + ids[1];
-            document.getElementById('chatTitle').innerText = friendName;
-            document.getElementById('userInput').disabled = false;
-            onValue(ref(db, `chats/${activeChatId}`), (snap) => {
-                const mDiv = document.getElementById('messages');
-                mDiv.innerHTML = "";
-                snap.forEach(m => {
-                    const isMe = m.val().authorUid === myId;
-                    const wrap = document.createElement('div');
-                    wrap.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
-                    wrap.innerHTML = `<div class="bubble">${m.val().text}</div>`;
-                    mDiv.appendChild(wrap);
-                });
-                mDiv.scrollTop = mDiv.scrollHeight;
-            });
-            document.getElementById('sidePanels').classList.remove('open');
-        }
+        document.getElementById('sendInviteBtn').onclick = async () => {
+            const email = document.getElementById('friendEmail').value.trim().toLowerCase();
+            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
+            const snap = await get(q);
+            if(snap.exists()){
+                const tid = Object.keys(snap.val())[0];
+                if(tid === myId) return;
+                const me = await get(ref(db, `users/${myId}`));
+                await set(ref(db, `requests/${tid}/${myId}`), { fromUid: myId, fromName: me.val().displayName, at: Date.now() });
+                alert("Envoyé !"); document.getElementById('addModal').classList.add('hidden');
+            } else alert("Introuvable");
+        };
 
         document.getElementById('mobileMenuBtn').onclick = () => document.getElementById('sidePanels').classList.add('open');
         document.getElementById('bpMenuClose').onclick = () => document.getElementById('sidePanels').classList.remove('open');
