@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Version App</title>
+
+<!-- Sécurité : bloque l'accès si ce n'est pas l'application -->
+<script>
+    const ua = navigator.userAgent;
+
+    // Vérifie si l'app utilise bien le User-Agent "MobileApp"
+    const isApp = ua.includes("MobileApp");
+
+    // Vérifie si c'est une WebView (Android)
+    const isWebView = /wv|WebView|Android/i.test(ua);
+
+    if (!isApp || !isWebView) {
+        // Redirection vers /404 (GitHub Pages va charger 404.html automatiquement)
+        window.location.href = "/404";
+    }
+</script>
+
+<style>
+    /* Style spécial version App */
+    body {
+        margin: 0;
+        padding: 0;
+        background: #121212;
+        color: white;
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+
+    header {
+        background: #1e1e1e;
+        padding: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        color: #00c853;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+
+    .content {
+        padding: 20px;
+        font-size: 18px;
+    }
+
+    .btn {
+        background: #00c853;
+        color: black;
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 20px;
+        text-decoration: none;
+    }
+
+    .btn:active {
+        background: #00e676;
+    }
+</style>
+
+</head>
+<body>
+
+<header>
+    Version App Mobile
+</header>
+
+<div class="content">
+    <p>Bienvenue dans la version App de BP‑Contact.</p>
+    <p>Cette page est uniquement accessible depuis l'application.</p>
+
+    <a class="btn" href="https://bp-contact.github.io/">
+        Aller sur la version Web
+    </a>
+</div>
+
+</body>
+</html>
