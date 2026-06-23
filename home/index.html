@@ -17,7 +17,7 @@
             --text-muted: #949ba4;
             --online: #23a559;
             --danger: #ed4245;
-            --alert-yellow: #fee75c; /* Ajout d'une couleur d'alerte */
+            --alert-yellow: #fee75c;
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -207,11 +207,9 @@
                 const userRef = ref(db, `users/${myId}`);
                 await update(userRef, { uid: myId, email: user.email.toLowerCase(), displayName: user.displayName || user.email.split('@')[0] });
                 
-                // Cacher le login
                 document.getElementById('loginOverlay').classList.add('hidden');
                 
                 // --- LOGIQUE POPUP NOUVEAUTÉS ---
-                // Vérifier si l'utilisateur a choisi de ne plus l'afficher
                 if (!localStorage.getItem('hideBpNews')) {
                     document.getElementById('newsOverlay').classList.remove('hidden');
                 }
@@ -235,9 +233,8 @@
         document.getElementById('closeNewsBtn').onclick = closeNewsPopup;
         
         document.getElementById('wikiBtn').onclick = () => {
-            // Remplace l'URL ci-dessous par le lien réel vers ton wiki
-            window.open('https://wiki.blocplay.com', '_blank'); 
-            closeNewsPopup(); // Ferme le popup après avoir cliqué
+            window.open('https://bp-help.github.io', '_blank'); 
+            closeNewsPopup();
         };
 
         // --- GESTION MESSAGES ---
@@ -296,19 +293,16 @@
                     const wrap = document.createElement('div');
                     wrap.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
                     
-                    // Bulle
                     const b = document.createElement('div');
                     b.className = "bubble";
                     b.innerText = data.text;
                     
-                    // Events Clic Long
                     b.oncontextmenu = (e) => showMenu(e, m.key, isMe);
                     b.ontouchstart = (e) => { longPressTimer = setTimeout(() => showMenu(e.touches[0], m.key, isMe), 500); };
                     b.ontouchend = () => clearTimeout(longPressTimer);
 
                     wrap.appendChild(b);
 
-                    // Affichage Réactions
                     if(data.reactions) {
                         const rDiv = document.createElement('div');
                         rDiv.className = "reactions-container";
