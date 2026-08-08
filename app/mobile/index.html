@@ -3,165 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BP-Contact | Notifications</title>
+    <title>BlocPlay | Mobile App</title>
     <style>
         :root {
-            --bg-main: #1e1f22;
-            --bg-sidebar: #2b2d31;
-            --bg-chat: #313338;
+            --bg-main: #0f1012;
+            --bg-sidebar: #18191c;
+            --bg-chat: #1e1f22;
+            --bg-card: #2b2d31;
             --accent: #5865f2;
             --msg-me: #5865f2;
-            --msg-friend: #383a40;
-            --text-main: #dbdee1;
+            --msg-friend: #2b2d31;
+            --text-main: #f2f3f5;
             --text-muted: #949ba4;
             --online: #23a559;
             --danger: #ed4245;
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-main); color: var(--text-main); overflow: hidden; position: fixed; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body, html { height: 100%; width: 100%; background: #000; color: var(--text-main); overflow: hidden; position: fixed; }
         
-        .app-container { display: flex; height: 100vh; width: 100vw; }
+        /* Conteneur App Style Mobile */
+        .app-container { 
+            display: flex; height: 100dvh; width: 100vw; max-width: 480px; margin: 0 auto; 
+            background: var(--bg-main); position: relative; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
 
-        /* Sidebar Navigation */
-        .side-panels { display: flex; height: 100%; transition: transform 0.3s ease; z-index: 1000; flex-shrink: 0; }
-        .contacts-bar { width: 72px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; }
-        .bp-logo { width: 48px; height: 48px; background: var(--accent); border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: white; }
-        .contact-circle { width: 48px; height: 48px; background: var(--bg-sidebar); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        .sidebar-info { width: 240px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e1f22; }
+        /* Sidebar Navigation Mobile Slider */
+        .side-panels { 
+            position: absolute; inset: 0; display: flex; z-index: 2000; 
+            transform: translateX(-100%); transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .side-panels.open { transform: translateX(0); }
+        .contacts-bar { width: 68px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; border-right: 1px solid #18191c; }
+        .bp-logo { width: 44px; height: 44px; background: var(--accent); border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 800; color: white; font-size: 18px; }
+        .contact-circle { width: 44px; height: 44px; background: var(--bg-card); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 16px; border: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-info { flex: 1; background: var(--bg-sidebar); display: flex; flex-direction: column; }
 
         /* Main Content Area */
-        .main-content { flex: 1; position: relative; height: 100%; background: var(--bg-chat); display: flex; flex-direction: column; min-width: 0; }
+        .main-content { flex: 1; position: relative; height: 100%; background: var(--bg-chat); display: flex; flex-direction: column; width: 100%; }
 
-        /* Dashboard & Pages Look */
-        .scroll-page { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        /* Dashboard & Cards Look */
+        .scroll-page { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
         .contact-card { 
-            background: white; border-radius: 20px; padding: 15px 20px; color: #333; 
-            display: flex; align-items: center; gap: 15px; margin-top: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            cursor: pointer; transition: transform 0.1s;
+            background: var(--bg-card); border-radius: 16px; padding: 14px 16px; color: var(--text-main); 
+            display: flex; align-items: center; gap: 14px; margin-top: 8px; cursor: pointer; transition: background 0.15s, transform 0.1s;
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        .contact-card:active { transform: scale(0.98); }
-        .user-icon-wrap { width: 50px; height: 50px; background: #444; border-radius: 50%; position: relative; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; flex-shrink: 0; }
-        .status-dot { position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; }
+        .contact-card:active { transform: scale(0.98); background: #313338; }
+        .user-icon-wrap { width: 46px; height: 46px; background: #404249; border-radius: 50%; position: relative; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; flex-shrink: 0; }
+        .status-dot { position: absolute; bottom: 0; right: 0; width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--bg-card); }
         .status-dot.online { background: var(--online); }
         .status-dot.offline { background: #808080; }
-        .user-name-big { font-size: 22px; color: #1e1f22; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-name-big { font-size: 17px; color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* Chat System */
+        /* Chat UI */
         #chatPage { display: none; flex-direction: column; height: 100%; position: relative; background: var(--bg-chat); }
-        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        #messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .bubble { 
-            padding: 12px 16px; border-radius: 18px; font-size: 15px; 
+            padding: 10px 14px; border-radius: 18px; font-size: 15px; 
             overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; 
-            max-width: 90%; line-height: 1.4; color: white;
+            max-width: 82%; line-height: 1.4; color: white;
         }
 
-        /* Barre de chat FIXE */
+        /* Barre de saisie style iOS / Android */
         .chat-input-area { 
-            padding: 15px; background: var(--bg-chat); border-top: 1px solid #26272d;
-            padding-bottom: calc(15px + env(safe-area-inset-bottom));
+            padding: 10px 12px; background: var(--bg-sidebar); border-top: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: calc(10px + env(safe-area-inset-bottom)); position: relative;
         }
-        .input-wrap { background: #383a40; border-radius: 12px; padding: 5px 15px; display: flex; align-items: center; gap: 10px; }
-        #userInput { background: transparent; border: none; color: white; flex: 1; outline: none; font-size: 16px; height: 40px; }
-        #sendBtn { background: var(--accent); color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-        /* Overlays & Modals */
-        .overlay-full { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-        #seeMoreOverlay { position: absolute; inset: 0; background: var(--bg-chat); z-index: 100; display: none; flex-direction: column; padding: 20px; }
-        .auth-card { background: var(--bg-sidebar); padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; color: white; }
+        .input-wrap { background: #2b2d31; border-radius: 24px; padding: 4px 6px 4px 14px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.08); }
+        #userInput { background: transparent; border: none; color: white; flex: 1; outline: none; font-size: 15px; height: 38px; }
         
-        .hamburger { background: none; border: none; color: white; font-size: 28px; cursor: pointer; margin-right: 15px; }
-        .hidden { display: none !important; }
+        /* Boutons d'action */
+        .icon-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: color 0.15s; }
+        .icon-btn:active { color: white; background: rgba(255,255,255,0.1); }
+        #sendBtn { background: var(--accent); color: white; border: none; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
 
-        @media (max-width: 768px) {
-            .side-panels { position: absolute; transform: translateX(-100%); width: 300px; height: 100%; }
-            .side-panels.open { transform: translateX(0); }
+        /* Clavier Émoji Popup */
+        #emojiPicker { 
+            position: absolute; bottom: calc(100% + 8px); left: 10px; right: 10px; 
+            background: #25272b; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); 
+            display: none; flex-direction: column; height: 260px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 3000; overflow: hidden;
         }
+        #emojiGrid { flex: 1; padding: 10px; overflow-y: auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
+        .emoji-item { font-size: 22px; cursor: pointer; padding: 6px; border-radius: 8px; user-select: none; transition: transform 0.1s; }
+        .emoji-item:active { transform: scale(1.3); background: rgba(255,255,255,0.1); }
+        .emoji-search-bar { padding: 8px 10px; background: #1b1c1e; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 8px; }
+        #emojiSearch { flex: 1; background: #2b2d31; border: none; color: white; padding: 8px 12px; border-radius: 12px; font-size: 13px; outline: none; }
+
+        /* Overlays & Modals Mobile */
+        .overlay-full { position: absolute; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); padding: 20px; }
+        #seeMoreOverlay { position: absolute; inset: 0; background: var(--bg-chat); z-index: 1500; display: none; flex-direction: column; padding: 16px; }
+        .auth-card { background: var(--bg-sidebar); padding: 22px; border-radius: 24px; width: 100%; max-width: 320px; text-align: center; color: white; border: 1px solid rgba(255,255,255,0.08); }
+        
+        .hamburger { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 12px; }
+        .hidden { display: none !important; }
     </style>
 </head>
-<body onclick="hideCtx()">
-
-    <div id="ctxMenu" style="position:fixed; background:#111214; border-radius:8px; padding:8px; z-index:9000; display:none; width:150px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
-        <div onclick="editMsg()" style="padding:10px; cursor:pointer; color:white;">Modifier</div>
-        <div onclick="deleteMsg()" style="padding:10px; cursor:pointer; color:var(--danger);">Supprimer</div>
-    </div>
-
-    <div id="loginOverlay" class="overlay-full">
-        <div class="auth-card">
-            <h2 style="margin-bottom:20px;">BlocPlay</h2>
-            <input type="email" id="email" placeholder="Email" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:none; background:#1e1f22; color:white;">
-            <input type="password" id="pass" placeholder="Mot de passe" style="width:100%; padding:12px; margin-bottom:20px; border-radius:8px; border:none; background:#1e1f22; color:white;">
-            <button id="loginBtn" style="width:100%; padding:12px; background:var(--accent); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">CONNEXION</button>
-        </div>
-    </div>
-
-    <div id="addModal" class="overlay-full hidden">
-        <div class="auth-card">
-            <h3>Ajouter un ami</h3>
-            <input type="email" id="friendEmail" placeholder="Email exact" style="width:100%; padding:12px; border-radius:8px; border:none; background:#1e1f22; color:white;">
-            <button id="sendInviteBtn" style="width:100%; margin-top:15px; padding:12px; background:var(--accent); color:white; border:none; border-radius:8px; font-weight:bold;">Envoyer l'invitation</button>
-            <button onclick="document.getElementById('addModal').classList.add('hidden')" style="background:none; border:none; color:var(--text-muted); margin-top:15px; cursor:pointer;">Annuler</button>
-        </div>
-    </div>
+<body onclick="hideCtx(); hideEmojiPicker(event);">
 
     <div class="app-container">
+
+        <div id="ctxMenu" style="position:absolute; background:#111214; border-radius:12px; padding:6px; z-index:9000; display:none; width:140px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);">
+            <div onclick="editMsg()" style="padding:10px; cursor:pointer; color:white; font-size:14px;">Modifier</div>
+            <div onclick="deleteMsg()" style="padding:10px; cursor:pointer; color:var(--danger); font-size:14px;">Supprimer</div>
+        </div>
+
+        <div id="loginOverlay" class="overlay-full">
+            <div class="auth-card">
+                <h2 style="margin-bottom:16px; font-size:22px;">BlocPlay</h2>
+                <input type="email" id="email" placeholder="Email" style="width:100%; padding:12px; margin-bottom:10px; border-radius:12px; border:none; background:#1e1f22; color:white; font-size:14px; outline:none;">
+                <input type="password" id="pass" placeholder="Mot de passe" style="width:100%; padding:12px; margin-bottom:16px; border-radius:12px; border:none; background:#1e1f22; color:white; font-size:14px; outline:none;">
+                <button id="loginBtn" style="width:100%; padding:12px; background:var(--accent); color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer; font-size:14px;">CONNEXION</button>
+            </div>
+        </div>
+
+        <div id="addModal" class="overlay-full hidden">
+            <div class="auth-card">
+                <h3 style="margin-bottom:12px; font-size:18px;">Ajouter un ami</h3>
+                <input type="email" id="friendEmail" placeholder="Email exact de l'ami" style="width:100%; padding:12px; border-radius:12px; border:none; background:#1e1f22; color:white; font-size:14px; outline:none;">
+                <button id="sendInviteBtn" style="width:100%; margin-top:14px; padding:12px; background:var(--accent); color:white; border:none; border-radius:12px; font-weight:bold; font-size:14px;">Envoyer l'invitation</button>
+                <button onclick="document.getElementById('addModal').classList.add('hidden')" style="background:none; border:none; color:var(--text-muted); margin-top:12px; cursor:pointer; font-size:13px;">Annuler</button>
+            </div>
+        </div>
+
         <div class="side-panels" id="sidePanels">
             <nav class="contacts-bar">
                 <div class="bp-logo" onclick="showHome()">BP</div>
                 <div id="iconsList" style="display:contents;"></div>
-                <div class="contact-circle" style="color:var(--online); border:2px dashed #444; font-size:24px;" onclick="document.getElementById('addModal').classList.remove('hidden')">+</div>
+                <div class="contact-circle" style="color:var(--online); border:2px dashed #444; font-size:20px;" onclick="document.getElementById('addModal').classList.remove('hidden')">+</div>
             </nav>
             <aside class="sidebar-info">
-                <div style="padding:20px; font-weight:bold; border-bottom:1px solid #1e1f22;">DEMANDES</div>
+                <div style="padding:16px; font-weight:bold; font-size:14px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
+                    <span>DEMANDES</span>
+                    <button onclick="toggleMenu()" style="background:none; border:none; color:var(--text-muted); font-size:18px;">✕</button>
+                </div>
                 <div id="requestsList" style="padding:10px; flex:1; overflow-y:auto;"></div>
-                <button onclick="auth.signOut().then(()=>location.reload())" style="padding:20px; color:var(--danger); background:none; border:none; text-align:left; cursor:pointer; font-weight:bold;">DÉCONNEXION</button>
+                
+                <button onclick="requestNotificationPermission()" style="padding:14px 16px; color:var(--accent); background:none; border:none; text-align:left; cursor:pointer; font-weight:600; font-size:13px; border-top:1px solid rgba(255,255,255,0.05);">🔔 Activer notifications</button>
+                <button onclick="auth.signOut().then(()=>location.reload())" style="padding:14px 16px; color:var(--danger); background:none; border:none; text-align:left; cursor:pointer; font-weight:bold; font-size:13px;">DÉCONNEXION</button>
             </aside>
         </div>
 
         <div class="main-content">
             <div id="homePage" class="scroll-page">
-                <div style="display:flex; align-items:center; font-size:24px; color:white; font-weight:bold;">
+                <div style="display:flex; align-items:center; font-size:20px; color:white; font-weight:bold; margin-bottom:4px;">
                     <button class="hamburger" onclick="toggleMenu()">☰</button> Accueil
                 </div>
                 <section>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span id="onLabel" style="font-weight:bold;">En ligne (0) :</span>
-                        <span style="color:var(--accent); cursor:pointer; font-size:14px;" onclick="openSeeMore('online')">Voir plus ></span>
+                        <span id="onLabel" style="font-weight:600; font-size:14px; color:var(--text-muted);">En ligne (0) :</span>
+                        <span style="color:var(--accent); cursor:pointer; font-size:13px; font-weight:500;" onclick="openSeeMore('online')">Voir plus ></span>
                     </div>
                     <div id="onPreview"></div>
                 </section>
                 <section>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span id="offLabel" style="font-weight:bold;">Hors ligne (0) :</span>
-                        <span style="color:var(--accent); cursor:pointer; font-size:14px;" onclick="openSeeMore('offline')">Voir plus ></span>
+                        <span id="offLabel" style="font-weight:600; font-size:14px; color:var(--text-muted);">Hors ligne (0) :</span>
+                        <span style="color:var(--accent); cursor:pointer; font-size:13px; font-weight:500;" onclick="openSeeMore('offline')">Voir plus ></span>
                     </div>
                     <div id="offPreview"></div>
                 </section>
             </div>
 
             <div id="chatPage">
-                <header style="height:60px; padding:0 15px; display:flex; align-items:center; border-bottom:1px solid #26272d;">
+                <header style="height:56px; padding:0 12px; display:flex; align-items:center; border-bottom:1px solid rgba(255,255,255,0.05); background:var(--bg-sidebar);">
                     <button class="hamburger" onclick="toggleMenu()">☰</button>
-                    <span id="chatTitle" style="font-weight:bold; font-size:18px;">Pseudo</span>
+                    <span id="chatTitle" style="font-weight:bold; font-size:16px;">Discussion</span>
                 </header>
+                
                 <div id="messages"></div>
+
                 <div class="chat-input-area">
+                    <div id="emojiPicker" onclick="event.stopPropagation()">
+                        <div id="emojiGrid"></div>
+                        <div class="emoji-search-bar">
+                            <input type="text" id="emojiSearch" placeholder="Rechercher un émoji (ex: coeur, rire, feu)..." oninput="filterEmojis(this.value)">
+                        </div>
+                    </div>
+
                     <div class="input-wrap">
-                        <input type="text" id="userInput" placeholder="Écrire un message...">
-                        <button id="sendBtn">➤</button>
+                        <input type="text" id="userInput" placeholder="Écrire un message..." onkeypress="if(event.key==='Enter') sendMessage()">
+                        <button class="icon-btn" onclick="toggleEmojiPicker(event)" title="Ajouter un émoji">😊</button>
+                        <button id="sendBtn" onclick="sendMessage()">➤</button>
                     </div>
                 </div>
             </div>
 
             <div id="seeMoreOverlay">
-                <div style="display:flex; align-items:center; margin-bottom:20px;">
+                <div style="display:flex; align-items:center; margin-bottom:16px;">
                     <button class="hamburger" onclick="toggleMenu()">☰</button>
-                    <span id="seeMoreTitle" style="font-size:22px; font-weight:bold;">Liste</span>
-                    <button onclick="closeSeeMore()" style="margin-left:auto; background:none; border:none; color:var(--accent); font-weight:bold; font-size:16px;">Fermer</button>
+                    <span id="seeMoreTitle" style="font-size:18px; font-weight:bold;">Liste</span>
+                    <button onclick="closeSeeMore()" style="margin-left:auto; background:none; border:none; color:var(--accent); font-weight:bold; font-size:14px;">Fermer</button>
                 </div>
-                <div id="seeMoreGrid" style="display:flex; flex-direction:column; gap:12px; overflow-y:auto;"></div>
+                <div id="seeMoreGrid" style="display:flex; flex-direction:column; gap:10px; overflow-y:auto;"></div>
             </div>
         </div>
+
     </div>
 
     <script type="module">
@@ -185,182 +222,79 @@
         let myId = null, activeChatId = null, contactsData = [], selectedMsgId = null;
         const activeListeners = new Set();
 
-        // Demander l'autorisation de notification
-        function requestNotificationPermission() {
-            if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
-                Notification.requestPermission();
-            }
-        }
+        // Émojis avec tags de recherche en Français
+        const emojiList = [
+            { e: "😀", k: "sourire content heureuse joie visage" },
+            { e: "😃", k: "sourire content heureux rire visage" },
+            { e: "😄", k: "sourire content heureux rire yeux" },
+            { e: "😁", k: "sourire dents heureux joie" },
+            { e: "😆", k: "mdr mort de rire fort" },
+            { e: "😅", k: "sourire sueur gêne soulagement" },
+            { e: "🤣", k: "ptdr ptdrrr mort de rire pleure sol" },
+            { e: "😂", k: "lol mdr pleure de joie larmes" },
+            { e: "🙂", k: "sourire calme sympa" },
+            { e: "😉", k: "clin d'oeil blague complice" },
+            { e: "😊", k: "sourire rougeurs timide mignon" },
+            { e: "😇", k: "ange aureole innocent sage" },
+            { e: "🥰", k: "amour coeurs bisou affection" },
+            { e: "😍", k: "amour yeux coeurs adorer amoureux" },
+            { e: "🤩", k: "etoiles yeux fantastique star" },
+            { e: "😘", k: "bisou coeur amour affection" },
+            { e: "😋", k: "miam delicieux langue" },
+            { e: "😜", k: "langue clin d'oeil blague" },
+            { e: "🤑", k: "argent dollars riche sous" },
+            { e: "🤗", k: "calin embrasser ouvert" },
+            { e: "🤫", k: "chut silence secret discret" },
+            { e: "🤔", k: "penser reflexion reflechir doute" },
+            { e: "🤐", k: "zip bouche fermee motus" },
+            { e: "🤨", k: "sourcil doute sceptique bizarre" },
+            { e: "😏", k: "sourire coin malin drague" },
+            { e: "😒", k: "blase ennerve bof agace" },
+            { e: "🙄", k: "yeux ciel ennerve pff" },
+            { e: "😬", k: "grimace malaise oups gêne" },
+            { e: "😴", k: "dodo sommeil nuit zzz fatigue" },
+            { e: "🥳", k: "fete anniversaire confettis" },
+            { e: "😎", k: "lunettes soleil cool classe" },
+            { e: "🤓", k: "lunettes intello geek" },
+            { e: "🥺", k: "prie stp s'il te plait mimi triste yeux" },
+            { e: "😭", k: "pleurer larmes triste torrent" },
+            { e: "😱", k: "peur cri choque horreur" },
+            { e: "😡", k: "rouge fache enerve colere" },
+            { e: "💩", k: "caca merde drôle" },
+            { e: "💀", k: "mort crane mort de rire" },
+            { e: "👀", k: "yeux regarder vu mate" },
+            { e: "👍", k: "pouce haut like super ok valide bravo" },
+            { e: "👎", k: "pouce bas nul dislike mauvais" },
+            { e: "👏", k: "applaudir bravo félicitation" },
+            { e: "🙌", k: "mains levees fete bravo" },
+            { e: "🙏", k: "prier merci stp s'il te plait svp" },
+            { e: "🤝", k: "poignee de main accord" },
+            { e: "🔥", k: "feu flamme chaud incendie frerot" },
+            { e: "❤️", k: "coeur rouge amour love passion" },
+            { e: "🧡", k: "coeur orange" },
+            { e: "💛", k: "coeur jaune amitie" },
+            { e: "💚", k: "coeur vert nature" },
+            { e: "💙", k: "coeur bleu" },
+            { e: "💜", k: "coeur violet" },
+            { e: "🖤", k: "coeur noir" },
+            { e: "🤍", k: "coeur blanc" },
+            { e: "💔", k: "coeur brise rupture triste" },
+            { e: "✨", k: "etoiles etincelles magie brillant" },
+            { e: "🎉", k: "fete confettis fêter anniversaire" },
+            { e: "🎁", k: "cadeau anniversaire fete" },
+            { e: "⚽", k: "foot ballon football sport" },
+            { e: "🎮", k: "manette jeu gaming jeux video" },
+            { e: "🎧", k: "casque musique ecouter audio" },
+            { e: "🚀", k: "fusee espace decollage rapide" },
+            { e: "👑", k: "couronne roi reine prince queen" }
+        ];
 
-        function triggerNotification(senderName, messageText) {
-            if ("Notification" in window && Notification.permission === "granted") {
-                new Notification(`Message de ${senderName}`, {
-                    body: messageText,
-                    icon: "https://via.placeholder.com/128/5865f2/ffffff?text=BP"
-                });
-            }
-        }
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                myId = user.uid;
-                const uRef = ref(db, `users/${myId}`);
-                await update(uRef, { uid: myId, email: user.email.toLowerCase(), displayName: user.email.split('@')[0], status: "online" });
-                onDisconnect(uRef).update({ status: "offline" });
-                document.getElementById('loginOverlay').classList.add('hidden');
-                requestNotificationPermission();
-                loadContacts(); loadRequests();
-            } else { 
-                document.getElementById('loginOverlay').classList.remove('hidden'); 
-            }
-        });
-
-        window.toggleMenu = () => document.getElementById('sidePanels').classList.toggle('open');
-        window.showHome = () => {
-            document.getElementById('homePage').style.display = 'flex';
-            document.getElementById('chatPage').style.display = 'none';
-            document.getElementById('seeMoreOverlay').style.display = 'none';
-            document.getElementById('sidePanels').classList.remove('open');
-            activeChatId = null;
-        };
-
-        function loadContacts() {
-            onValue(ref(db, `contacts/${myId}`), (snap) => {
-                const iList = document.getElementById('iconsList'); iList.innerHTML = "";
-                contactsData = [];
-                snap.forEach(c => {
-                    const fid = c.val().uid;
-                    onValue(ref(db, `users/${fid}`), (uSnap) => {
-                        const data = uSnap.val(); if(!data) return;
-                        contactsData = contactsData.filter(u => u.uid !== fid);
-                        contactsData.push(data);
-                        
-                        const icon = document.createElement('div');
-                        icon.className = "contact-circle"; icon.innerText = data.displayName[0];
-                        icon.onclick = () => openChat(fid, data.displayName);
-                        iList.appendChild(icon);
-                        refreshDashboard();
-                        
-                        // Écouteur de notifications d'arrière-plan pour ce contact
-                        listenForNotifications(fid, data.displayName);
-                    });
-                });
-            });
-        }
-
-        function listenForNotifications(friendId, friendName) {
-            const ids = [myId, friendId].sort();
-            const chatId = ids[0] + "_" + ids[1];
+        // Charger la grille d'émojis
+        window.renderEmojis = (filter = "") => {
+            const grid = document.getElementById('emojiGrid');
+            grid.innerHTML = "";
+            const cleanFilter = filter.toLowerCase().trim();
             
-            if (activeListeners.has(chatId)) return;
-            activeListeners.add(chatId);
-
-            let initialLoad = true;
-            const chatRef = query(ref(db, `chats/${chatId}`), limitToLast(1));
-            
-            onValue(chatRef, (snap) => {
-                if (initialLoad) {
-                    initialLoad = false;
-                    return;
-                }
-                
-                snap.forEach(m => {
-                    const msg = m.val();
-                    // Envoyer notification si le message ne vient pas de moi ET (on n'est pas sur ce chat OU l'onglet est en arrière-plan)
-                    if (msg.authorUid !== myId && (activeChatId !== chatId || document.hidden)) {
-                        triggerNotification(friendName, msg.text);
-                    }
-                });
-            });
-        }
-
-        function refreshDashboard() {
-            const onArr = contactsData.filter(u => u.status === 'online');
-            const offArr = contactsData.filter(u => u.status === 'offline');
-            document.getElementById('onLabel').innerText = `En ligne (${onArr.length}) :`;
-            document.getElementById('offLabel').innerText = `Hors ligne (${offArr.length}) :`;
-
-            const cardHtml = (u) => `<div class="contact-card" onclick="openChat('${u.uid}', '${u.displayName}')"><div class="user-icon-wrap">${u.displayName[0]}<div class="status-dot ${u.status}"></div></div><div class="user-name-big">${u.displayName}</div></div>`;
-            document.getElementById('onPreview').innerHTML = onArr.length ? cardHtml(onArr[0]) : "";
-            document.getElementById('offPreview').innerHTML = offArr.length ? cardHtml(offArr[0]) : "";
-        }
-
-        window.openChat = (fid, fname) => {
-            const ids = [myId, fid].sort();
-            activeChatId = ids[0] + "_" + ids[1];
-            document.getElementById('chatTitle').innerText = fname;
-            document.getElementById('homePage').style.display = 'none';
-            document.getElementById('chatPage').style.display = 'flex';
-            document.getElementById('seeMoreOverlay').style.display = 'none';
-            document.getElementById('sidePanels').classList.remove('open');
-            
-            onValue(ref(db, `chats/${activeChatId}`), (snap) => {
-                const mDiv = document.getElementById('messages'); mDiv.innerHTML = "";
-                snap.forEach(m => {
-                    const isMe = m.val().authorUid === myId;
-                    const wrap = document.createElement('div');
-                    wrap.style = `display:flex; flex-direction:column; max-width:100%; align-self:${isMe?'flex-end':'flex-start'}; align-items:${isMe?'flex-end':'flex-start'}`;
-                    wrap.innerHTML = `<div class="bubble" oncontextmenu="showCtx(event, '${m.key}', ${isMe})" style="background:${isMe?'var(--msg-me)':'var(--msg-friend)'}; border-radius:18px; border-bottom-${isMe?'right':'left'}-radius:4px;">${m.val().text}</div>`;
-                    mDiv.appendChild(wrap);
-                });
-                mDiv.scrollTop = mDiv.scrollHeight;
-            });
-        };
-
-        window.openSeeMore = (type) => {
-            const grid = document.getElementById('seeMoreGrid'); grid.innerHTML = "";
-            document.getElementById('seeMoreOverlay').style.display = 'flex';
-            document.getElementById('seeMoreTitle').innerText = type === 'online' ? "Amis en ligne" : "Amis hors ligne";
-            contactsData.filter(c => c.status === type).forEach(c => {
-                grid.innerHTML += `<div class="contact-card" onclick="openChat('${c.uid}', '${c.displayName}')"><div class="user-icon-wrap">${c.displayName[0]}<div class="status-dot ${c.status}"></div></div><div class="user-name-big">${c.displayName}</div></div>`;
-            });
-        };
-        window.closeSeeMore = () => document.getElementById('seeMoreOverlay').style.display = 'none';
-
-        function loadRequests() {
-            onValue(ref(db, `requests/${myId}`), (snap) => {
-                const rList = document.getElementById('requestsList'); rList.innerHTML = "";
-                snap.forEach(c => {
-                    rList.innerHTML += `<div style="padding:12px; background:#383a40; border-radius:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; font-size:14px;"><span>${c.val().fromName}</span><button onclick="acceptInvite('${c.key}')" style="background:var(--online); color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">OK</button></div>`;
-                });
-            });
-        }
-
-        window.acceptInvite = async (fid) => {
-            await set(ref(db, `contacts/${myId}/${fid}`), { uid: fid });
-            await set(ref(db, `contacts/${fid}/${myId}`), { uid: myId });
-            await remove(ref(db, `requests/${myId}/${fid}`));
-        };
-
-        document.getElementById('sendBtn').onclick = () => {
-            const val = document.getElementById('userInput').value.trim();
-            if(val && activeChatId) push(ref(db, `chats/${activeChatId}`), { authorUid: myId, text: val });
-            document.getElementById('userInput').value = "";
-        };
-
-        document.getElementById('loginBtn').onclick = () => {
-            const e = document.getElementById('email').value;
-            const p = document.getElementById('pass').value;
-            signInWithEmailAndPassword(auth, e, p).catch(err => alert("Erreur : " + err.message));
-        };
-
-        document.getElementById('sendInviteBtn').onclick = async () => {
-            const email = document.getElementById('friendEmail').value.trim().toLowerCase();
-            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
-            const snap = await get(q);
-            if(snap.exists()){
-                const tid = Object.keys(snap.val())[0];
-                const me = await get(ref(db, `users/${myId}`));
-                await set(ref(db, `requests/${tid}/${myId}`), { fromUid: myId, fromName: me.val().displayName });
-                alert("Demande envoyée !"); document.getElementById('addModal').classList.add('hidden');
-            } else alert("Utilisateur non trouvé.");
-        };
-
-        // Context Menu Functions
-        window.showCtx = (e, mid, isMe) => { if(!isMe) return; e.preventDefault(); selectedMsgId = mid; const m = document.getElementById('ctxMenu'); m.style.display='block'; m.style.left=e.pageX+'px'; m.style.top=e.pageY+'px'; };
-        window.hideCtx = () => document.getElementById('ctxMenu').style.display='none';
-        window.deleteMsg = () => remove(ref(db, `chats/${activeChatId}/${selectedMsgId}`));
-        window.editMsg = () => { const t = prompt("Nouveau message :"); if(t) update(ref(db, `chats/${activeChatId}/${selectedMsgId}`), { text: t + " (modifié)" }); };
-    </script>
-</body>
-</html>
+            emojiList.forEach(item => {
+                if (!cleanFilter || item.k.includes(cleanFilter) || item.e.includes(cleanFilter)) {
+                    const span = document.createElement('
