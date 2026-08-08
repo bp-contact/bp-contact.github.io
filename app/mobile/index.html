@@ -363,4 +363,21 @@
 
         document.getElementById('sendInviteBtn').onclick = async () => {
             const email = document.getElementById('friendEmail').value.trim().toLowerCase();
-       
+            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
+            const snap = await get(q);
+            if(snap.exists()){
+                const tid = Object.keys(snap.val())[0];
+                if(tid === myId) return;
+                const me = await get(ref(db, `users/${myId}`));
+                await set(ref(db, `requests/${tid}/${myId}`), { fromUid: myId, fromName: me.val().displayName, at: Date.now() });
+                alert("Envoyé !"); document.getElementById('addModal').classList.add('hidden');
+            } else alert("Introuvable");
+        };
+
+        document.getElementById('mobileMenuBtn').onclick = () => document.getElementById('sidePanels').classList.add('open');
+        document.getElementById('bpMenuClose').onclick = () => document.getElementById('sidePanels').classList.remove('open');
+        document.getElementById('loginBtn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
+        document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.reload());
+    </script>
+</body>
+</html>
