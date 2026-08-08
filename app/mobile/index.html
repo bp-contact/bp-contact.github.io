@@ -328,4 +328,39 @@
 
         window.acceptInvite = async (fid) => {
             await set(ref(db, `contacts/${myId}/${fid}`), { uid: fid });
-            await set(ref(db, `contacts/${fid}/
+            await set(ref(db, `contacts/${fid}/${myId}`), { uid: myId });
+            await remove(ref(db, `requests/${myId}/${fid}`));
+        };
+
+        document.getElementById('sendBtn').onclick = () => {
+            const val = document.getElementById('userInput').value.trim();
+            if(val && activeChatId) push(ref(db, `chats/${activeChatId}`), { authorUid: myId, text: val });
+            document.getElementById('userInput').value = "";
+        };
+
+        document.getElementById('loginBtn').onclick = () => {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            signInWithEmailAndPassword(auth, e, p).catch(err => alert("Erreur : " + err.message));
+        };
+
+        document.getElementById('sendInviteBtn').onclick = async () => {
+            const email = document.getElementById('friendEmail').value.trim().toLowerCase();
+            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
+            const snap = await get(q);
+            if(snap.exists()){
+                const tid = Object.keys(snap.val())[0];
+                const me = await get(ref(db, `users/${myId}`));
+                await set(ref(db, `requests/${tid}/${myId}`), { fromUid: myId, fromName: me.val().displayName });
+                alert("Demande envoyée !"); document.getElementById('addModal').classList.add('hidden');
+            } else alert("Utilisateur non trouvé.");
+        };
+
+        // Context Menu Functions
+        window.showCtx = (e, mid, isMe) => { if(!isMe) return; e.preventDefault(); selectedMsgId = mid; const m = document.getElementById('ctxMenu'); m.style.display='block'; m.style.left=e.pageX+'px'; m.style.top=e.pageY+'px'; };
+        window.hideCtx = () => document.getElementById('ctxMenu').style.display='none';
+        window.deleteMsg = () => remove(ref(db, `chats/${activeChatId}/${selectedMsgId}`));
+        window.editMsg = () => { const t = prompt("Nouveau message :"); if(t) update(ref(db, `chats/${activeChatId}/${selectedMsgId}`), { text: t + " (modifié)" }); };
+    </script>
+</body>
+</html>
