@@ -297,4 +297,217 @@
             
             emojiList.forEach(item => {
                 if (!cleanFilter || item.k.includes(cleanFilter) || item.e.includes(cleanFilter)) {
-                    const span = document.createElement('
+                    const span = document.createElement('span');
+                    span.className = 'emoji-item';
+                    span.innerText = item.e;
+                    span.onclick = () => {
+                        const input = document.getElementById('userInput');
+                        input.value += item.e;
+                        input.focus();
+                    };
+                    grid.appendChild(span);
+                }
+            });
+        };
+
+        window.filterEmojis = (val) => renderEmojis(val);
+
+        window.toggleEmojiPicker = (e) => {
+            e.stopPropagation();
+            const picker = document.getElementById('emojiPicker');
+            const isHidden = picker.style.display !== 'flex';
+            picker.style.display = isHidden ? 'flex' : 'none';
+            if (isHidden) renderEmojis();
+        };
+
+        window.hideEmojiPicker = (e) => {
+            const picker = document.getElementById('emojiPicker');
+            if (picker && picker.style.display === 'flex') {
+                picker.style.display = 'none';
+            }
+        };
+
+        // Gestion des Notifications Web
+        window.requestNotificationPermission = () => {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        alert("Notifications activées avec succès !");
+                    } else if (permission === "denied") {
+                        alert("Notifications refusées dans les paramètres de votre navigateur.");
+                    }
+                });
+            } else {
+                alert("Votre navigateur ne supporte pas les notifications Web.");
+            }
+        };
+
+        function triggerNotification(senderName, messageText) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(`Message de ${senderName}`, {
+                    body: messageText,
+                    icon: "https://via.placeholder.com/128/5865f2/ffffff?text=BP"
+                });
+            }
+        }
+
+        // Authentification Firebase
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                myId = user.uid;
+                const uRef = ref(db, `users/${myId}`);
+                await update(uRef, { uid: myId, email: user.email.toLowerCase(), displayName: user.email.split('@')[0], status: "online" });
+                onDisconnect(uRef).update({ status: "offline" });
+                document.getElementById('loginOverlay').classList.add('hidden');
+                loadContacts(); loadRequests();
+            } else { 
+                document.getElementById('loginOverlay').classList.remove('hidden'); 
+            }
+        });
+
+        window.toggleMenu = () => document.getElementById('sidePanels').classList.toggle('open');
+        window.showHome = () => {
+            document.getElementById('homePage').style.display = 'flex';
+            document.getElementById('chatPage').style.display = 'none';
+            document.getElementById('seeMoreOverlay').style.display = 'none';
+            document.getElementById('sidePanels').classList.remove('open');
+            activeChatId = null;
+        };
+
+        function loadContacts() {
+            onValue(ref(db, `contacts/${myId}`), (snap) => {
+                const iList = document.getElementById('iconsList'); iList.innerHTML = "";
+                contactsData = [];
+                snap.forEach(c => {
+                    const fid = c.val().uid;
+                    onValue(ref(db, `users/${fid}`), (uSnap) => {
+                        const data = uSnap.val(); if(!data) return;
+                        contactsData = contactsData.filter(u => u.uid !== fid);
+                        contactsData.push(data);
+                        
+                        const icon = document.createElement('div');
+                        icon.className = "contact-circle"; icon.innerText = data.displayName[0];
+                        icon.onclick = () => openChat(fid, data.displayName);
+                        iList.appendChild(icon);
+                        refreshDashboard();
+                        listenForNotifications(fid, data.displayName);
+                    });
+                });
+            });
+        }
+
+        function listenForNotifications(friendId, friendName) {
+            const ids = [myId, friendId].sort();
+            const chatId = ids[0] + "_" + ids[1];
+            
+            if (activeListeners.has(chatId)) return;
+            activeListeners.add(chatId);
+
+            let initialLoad = true;
+            const chatRef = query(ref(db, `chats/${chatId}`), limitToLast(1));
+            
+            onValue(chatRef, (snap) => {
+                if (initialLoad) {
+                    initialLoad = false;
+                    return;
+                }
+                snap.forEach(m => {
+                    const msg = m.val();
+                    if (msg.authorUid !== myId && (activeChatId !== chatId || document.hidden)) {
+                        triggerNotification(friendName, msg.text);
+                    }
+                });
+            });
+        }
+
+        function refreshDashboard() {
+            const onArr = contactsData.filter(u => u.status === 'online');
+            const offArr = contactsData.filter(u => u.status === 'offline');
+            document.getElementById('onLabel').innerText = `En ligne (${onArr.length}) :`;
+            document.getElementById('offLabel').innerText = `Hors ligne (${offArr.length}) :`;
+
+            const cardHtml = (u) => `<div class="contact-card" onclick="openChat('${u.uid}', '${u.displayName}')"><div class="user-icon-wrap">${u.displayName[0]}<div class="status-dot ${u.status}"></div></div><div class="user-name-big">${u.displayName}</div></div>`;
+            document.getElementById('onPreview').innerHTML = onArr.length ? cardHtml(onArr[0]) : "";
+            document.getElementById('offPreview').innerHTML = offArr.length ? cardHtml(offArr[0]) : "";
+        }
+
+        window.openChat = (fid, fname) => {
+            const ids = [myId, fid].sort();
+            activeChatId = ids[0] + "_" + ids[1];
+            document.getElementById('chatTitle').innerText = fname;
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('chatPage').style.display = 'flex';
+            document.getElementById('seeMoreOverlay').style.display = 'none';
+            document.getElementById('sidePanels').classList.remove('open');
+            
+            onValue(ref(db, `chats/${activeChatId}`), (snap) => {
+                const mDiv = document.getElementById('messages'); mDiv.innerHTML = "";
+                snap.forEach(m => {
+                    const isMe = m.val().authorUid === myId;
+                    const wrap = document.createElement('div');
+                    wrap.style = `display:flex; flex-direction:column; max-width:100%; align-self:${isMe?'flex-end':'flex-start'}; align-items:${isMe?'flex-end':'flex-start'}`;
+                    wrap.innerHTML = `<div class="bubble" oncontextmenu="showCtx(event, '${m.key}', ${isMe})" style="background:${isMe?'var(--msg-me)':'var(--msg-friend)'}; border-radius:18px; border-bottom-${isMe?'right':'left'}-radius:4px;">${m.val().text}</div>`;
+                    mDiv.appendChild(wrap);
+                });
+                mDiv.scrollTop = mDiv.scrollHeight;
+            });
+        };
+
+        window.openSeeMore = (type) => {
+            const grid = document.getElementById('seeMoreGrid'); grid.innerHTML = "";
+            document.getElementById('seeMoreOverlay').style.display = 'flex';
+            document.getElementById('seeMoreTitle').innerText = type === 'online' ? "Amis en ligne" : "Amis hors ligne";
+            contactsData.filter(c => c.status === type).forEach(c => {
+                grid.innerHTML += `<div class="contact-card" onclick="openChat('${c.uid}', '${c.displayName}')"><div class="user-icon-wrap">${c.displayName[0]}<div class="status-dot ${c.status}"></div></div><div class="user-name-big">${c.displayName}</div></div>`;
+            });
+        };
+        window.closeSeeMore = () => document.getElementById('seeMoreOverlay').style.display = 'none';
+
+        function loadRequests() {
+            onValue(ref(db, `requests/${myId}`), (snap) => {
+                const rList = document.getElementById('requestsList'); rList.innerHTML = "";
+                snap.forEach(c => {
+                    rList.innerHTML += `<div style="padding:10px; background:#2b2d31; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:13px;"><span>${c.val().fromName}</span><button onclick="acceptInvite('${c.key}')" style="background:var(--online); color:white; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-weight:bold;">OK</button></div>`;
+                });
+            });
+        }
+
+        window.acceptInvite = async (fid) => {
+            await set(ref(db, `contacts/${myId}/${fid}`), { uid: fid });
+            await set(ref(db, `contacts/${fid}/${myId}`), { uid: myId });
+            await remove(ref(db, `requests/${myId}/${fid}`));
+        };
+
+        window.sendMessage = () => {
+            const val = document.getElementById('userInput').value.trim();
+            if(val && activeChatId) push(ref(db, `chats/${activeChatId}`), { authorUid: myId, text: val });
+            document.getElementById('userInput').value = "";
+            hideEmojiPicker();
+        };
+
+        document.getElementById('loginBtn').onclick = () => {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            signInWithEmailAndPassword(auth, e, p).catch(err => alert("Erreur : " + err.message));
+        };
+
+        document.getElementById('sendInviteBtn').onclick = async () => {
+            const email = document.getElementById('friendEmail').value.trim().toLowerCase();
+            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
+            const snap = await get(q);
+            if(snap.exists()){
+                const tid = Object.keys(snap.val())[0];
+                const me = await get(ref(db, `users/${myId}`));
+                await set(ref(db, `requests/${tid}/${myId}`), { fromUid: myId, fromName: me.val().displayName });
+                alert("Demande envoyée !"); document.getElementById('addModal').classList.add('hidden');
+            } else alert("Utilisateur non trouvé.");
+        };
+
+        // Context Menu Functions
+        window.showCtx = (e, mid, isMe) => { if(!isMe) return; e.preventDefault(); selectedMsgId = mid; const m = document.getElementById('ctxMenu'); m.style.display='block'; m.style.left=e.pageX+'px'; m.style.top=e.pageY+'px'; };
+        window.hideCtx = () => document.getElementById('ctxMenu').style.display='none';
+        window.deleteMsg = () => remove(ref(db, `chats/${activeChatId}/${selectedMsgId}`));
+        window.editMsg = () => { const t = prompt("Nouveau message :"); if(t) update(ref(db, `chats/${activeChatId}/${selectedMsgId}`), { text: t + " (modifié)" }); };
+    </script>
+</body>
+</html>
