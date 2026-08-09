@@ -3,103 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application de Chat</title>
+    <title>Application de Chat Moderne</title>
     <style>
         :root {
             --bg-main: #313338;
             --bg-side: #2b2d31;
             --bg-dark: #1e1f22;
             --text: #f2f3f5;
-            --msg-me: #0084ff;
+            --text-muted: #b5bac1;
+            --msg-me: #5865f2;
             --msg-friend: #383a40;
             --online: #23a55a;
             --offline: #80848e;
             --accent: #5865f2;
+            --danger: #f23f43;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg-main); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Layout */
-        #sidePanels { width: 260px; background: var(--bg-side); display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.05); }
-        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
-
-        /* Helpers & UI Components */
-        .hidden { display: none !important; }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-card { background: var(--bg-side); padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        /* Sidebar */
+        #sidePanels { width: 280px; background: var(--bg-side); display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-header h2 { font-size: 16px; font-weight: 600; }
         
-        input, button { outline: none; border: none; }
-        input { background: var(--bg-dark); color: white; padding: 10px 14px; border-radius: 8px; width: 100%; margin-bottom: 10px; }
-        button { background: var(--accent); color: white; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        button:hover { opacity: 0.9; }
-
-        /* Contact Lists & Cards */
-        .contact-circle { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; margin-bottom: 8px; }
-        .contact-card { display: flex; align-items: center; gap: 12px; padding: 10px; background: var(--bg-dark); border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
-        .user-icon-wrap { position: relative; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .status-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--bg-dark); }
+        #iconsList { padding: 12px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+        
+        .contact-item { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+        .contact-item:hover { background: rgba(255,255,255,0.05); }
+        
+        .user-icon-wrap { position: relative; width: 38px; height: 38px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; flex-shrink: 0; }
+        .status-dot { position: absolute; bottom: 0; right: 0; width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--bg-side); }
         .status-dot.online { background: var(--online); }
         .status-dot.offline { background: var(--offline); }
+        
+        .contact-info { display: flex; flex-direction: column; overflow: hidden; }
+        .contact-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .contact-status-text { font-size: 12px; color: var(--text-muted); }
+
+        /* Main Content & Dashboard */
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg-main); }
+        
+        #homePage { flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+        .dashboard-section { background: var(--bg-side); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); }
+        .dashboard-section h4 { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
 
         /* Chat Area */
-        #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
-        .bubble { padding: 10px 14px; max-width: 70%; word-break: break-word; font-size: 14px; line-height: 1.4; }
-        .chat-input-area { padding: 12px; background: var(--bg-side); display: flex; gap: 8px; align-items: center; position: relative; }
+        #chatPage { display: none; flex-direction: column; height: 100%; }
+        .chat-header { padding: 14px 20px; background: var(--bg-side); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+        
+        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .bubble-wrapper { display: flex; flex-direction: column; max-width: 75%; }
+        .bubble-wrapper.me { align-self: flex-end; align-items: flex-end; }
+        .bubble-wrapper.friend { align-self: flex-start; align-items: flex-start; }
+        
+        .bubble { padding: 10px 14px; word-break: break-word; font-size: 14px; line-height: 1.4; border-radius: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .bubble-wrapper.me .bubble { background: var(--msg-me); color: white; border-bottom-right-radius: 4px; }
+        .bubble-wrapper.friend .bubble { background: var(--msg-friend); color: var(--text); border-bottom-left-radius: 4px; }
+        
+        .chat-input-area { padding: 16px; background: var(--bg-side); display: flex; gap: 10px; align-items: center; position: relative; border-top: 1px solid rgba(255,255,255,0.03); }
+        
+        /* UI Elements & Modals */
+        input, button { outline: none; border: none; }
+        input { background: var(--bg-dark); color: white; padding: 10px 14px; border-radius: 8px; width: 100%; font-size: 14px; border: 1px solid transparent; transition: border 0.2s; }
+        input:focus { border-color: var(--accent); }
+        
+        button { background: var(--accent); color: white; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: opacity 0.2s; }
+        button:hover { opacity: 0.85; }
+
+        .hidden { display: none !important; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal-card { background: var(--bg-side); padding: 24px; border-radius: 14px; width: 90%; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.05); }
 
         /* Context Menu & Emoji Picker */
-        #ctxMenu { position: fixed; background: var(--bg-dark); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px; display: none; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-        .ctx-item { padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 8px; }
+        #ctxMenu { position: fixed; background: var(--bg-dark); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px; display: none; z-index: 2000; box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+        .ctx-item { padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text); }
         .ctx-item:hover { background: var(--accent); }
 
-        #emojiPicker { position: absolute; bottom: 60px; right: 12px; width: 300px; height: 320px; background: var(--bg-dark); border-radius: 12px; display: none; flex-direction: column; padding: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 100; }
-        #emojiGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; font-size: 20px; text-align: center; }
-        .emoji-item { cursor: pointer; padding: 4px; border-radius: 4px; }
+        #emojiPicker { position: absolute; bottom: 70px; left: 16px; width: 320px; height: 340px; background: var(--bg-dark); border-radius: 12px; display: none; flex-direction: column; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 100; border: 1px solid rgba(255,255,255,0.05); }
+        #emojiGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; font-size: 20px; text-align: center; margin-top: 8px; }
+        .emoji-item { cursor: pointer; padding: 6px; border-radius: 6px; transition: background 0.1s; }
         .emoji-item:hover { background: var(--bg-side); }
     </style>
 </head>
-<body onclick="hideCtx(); hideEmojiPicker(event)">
+<body onclick="hideCtx(); hideEmojiPicker()">
 
     <div id="sidePanels">
-        <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
-            <h2 style="font-size: 18px;">Discussion</h2>
-            <button onclick="openAddModal()" style="padding: 6px 10px; font-size: 12px;">+ Ami</button>
+        <div class="sidebar-header">
+            <h2>Messages</h2>
+            <button onclick="openAddModal()" style="padding: 6px 12px; font-size: 12px;">+ Ajouter</button>
         </div>
-        <div id="iconsList" style="padding: 0 16px; flex: 1; overflow-y: auto;"></div>
-        <div style="padding: 16px;">
-            <h4 style="font-size: 12px; margin-bottom: 8px; color: #b5bac1;">DEMANDES</h4>
+        <div id="iconsList"></div>
+        <div style="padding: 16px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <h4 style="font-size: 11px; margin-bottom: 8px; color: var(--text-muted); text-transform: uppercase;">Demandes d'amis</h4>
             <div id="requestsList"></div>
         </div>
     </div>
 
     <div class="main-content">
-        <div id="homePage" style="flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 20px;">
-            <h3>Tableau de bord</h3>
-            <div>
-                <span id="onLabel">En ligne :</span>
-                <div id="onPreview"></div>
-                <button onclick="openSeeMore('online')" style="font-size: 12px; margin-top: 4px;">Voir tout</button>
+        <div id="homePage">
+            <h3 style="font-size: 20px; font-weight: 600;">Tableau de bord</h3>
+            <div class="dashboard-section">
+                <h4 id="onLabel">En ligne (0)</h4>
+                <div id="onPreview" style="display: flex; flex-direction: column; gap: 6px;"></div>
             </div>
-            <div>
-                <span id="offLabel">Hors ligne :</span>
-                <div id="offPreview"></div>
-                <button onclick="openSeeMore('offline')" style="font-size: 12px; margin-top: 4px;">Voir tout</button>
+            <div class="dashboard-section">
+                <h4 id="offLabel">Hors ligne (0)</h4>
+                <div id="offPreview" style="display: flex; flex-direction: column; gap: 6px;"></div>
             </div>
         </div>
 
-        <div id="chatPage" style="display: none; flex-direction: column; height: 100%;">
-            <div style="padding: 14px; background: var(--bg-side); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
-                <h3 id="chatTitle">Ami</h3>
-                <button onclick="showHome()" style="background: transparent; color: #b5bac1;">Fermer</button>
+        <div id="chatPage">
+            <div class="chat-header">
+                <h3 id="chatTitle" style="font-size: 16px; font-weight: 600;">Discussion</h3>
+                <button onclick="showHome()" style="background: transparent; color: var(--text-muted); padding: 4px 8px;">Fermer</button>
             </div>
             <div id="messages"></div>
-            <div class="chat-input-area">
-                <button onclick="toggleEmojiPicker(event)" style="background: transparent; font-size: 18px;">😊</button>
-                <input type="text" id="userInput" placeholder="Écrire un message..." onkeypress="if(event.key==='Enter') sendMessage()" />
+            <div class="chat-input-area" onclick="event.stopPropagation()">
+                <button onclick="toggleEmojiPicker(event)" style="background: transparent; font-size: 20px; padding: 4px;">😊</button>
+                <input type="text" id="userInput" placeholder="Envoyer un message..." onkeypress="if(event.key==='Enter') sendMessage()" />
                 <button onclick="sendMessage()">Envoyer</button>
 
-                <div id="emojiPicker" onclick="event.stopPropagation()">
-                    <input type="text" placeholder="Rechercher..." oninput="filterEmojis(this.value)" />
+                <div id="emojiPicker">
+                    <input type="text" placeholder="Rechercher un émoji..." oninput="filterEmojis(this.value)" />
                     <div id="emojiGrid"></div>
                 </div>
             </div>
@@ -108,31 +134,21 @@
 
     <div id="loginOverlay" class="overlay">
         <div class="modal-card">
-            <h3 style="margin-bottom: 12px;">Connexion</h3>
-            <input type="email" id="email" placeholder="Email" />
-            <input type="password" id="pass" placeholder="Mot de passe" />
+            <h3 style="margin-bottom: 16px; font-size: 18px;">Connexion requise</h3>
+            <input type="email" id="email" placeholder="Adresse email" style="margin-bottom: 12px;" />
+            <input type="password" id="pass" placeholder="Mot de passe" style="margin-bottom: 16px;" />
             <button id="loginBtn" style="width: 100%;">Se connecter</button>
         </div>
     </div>
 
     <div id="addModal" class="overlay hidden">
         <div class="modal-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3>Ajouter un ami</h3>
-                <span onclick="closeAddModal()" style="cursor:pointer; font-size:20px;">&times;</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="font-size: 16px;">Ajouter un contact</h3>
+                <span onclick="closeAddModal()" style="cursor:pointer; font-size:22px; color: var(--text-muted);">&times;</span>
             </div>
-            <input type="email" id="friendEmail" placeholder="Email de votre ami" />
+            <input type="email" id="friendEmail" placeholder="Email de votre ami" style="margin-bottom: 16px;" />
             <button id="sendInviteBtn" style="width:100%;">Envoyer la demande</button>
-        </div>
-    </div>
-
-    <div id="seeMoreOverlay" class="overlay" style="display: none;">
-        <div class="modal-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 id="seeMoreTitle">Amis</h3>
-                <span onclick="closeSeeMore()" style="cursor:pointer; font-size:20px;">&times;</span>
-            </div>
-            <div id="seeMoreGrid" style="max-height:300px; overflow-y:auto;"></div>
         </div>
     </div>
 
@@ -140,7 +156,7 @@
         <div class="ctx-item" onclick="addReaction('❤️')">❤️ Réagir</div>
         <div class="ctx-item" onclick="copyMsg()">📋 Copier</div>
         <div class="ctx-item" id="ctxEdit" onclick="editMsg()">✏️ Modifier</div>
-        <div class="ctx-item" id="ctxDelete" onclick="deleteMsg()" style="color:#f23f43;">🗑️ Supprimer</div>
+        <div class="ctx-item" id="ctxDelete" onclick="deleteMsg()" style="color: var(--danger);">🗑️ Supprimer</div>
     </div>
 
     <script type="module">
@@ -148,7 +164,6 @@
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, push, update, remove, onValue, get, query, orderByChild, equalTo, onDisconnect, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // CONFIGURATION FIREBASE (REMETS TES CLÉS ICI)
         const firebaseConfig = {
             apiKey: "VOTRE_API_KEY",
             authDomain: "VOTRE_PROJECT.firebaseapp.com",
@@ -171,16 +186,90 @@
         let selectedMsgText = "";
 
         const emojiList = [
-            { e: "😀", k: "sourire joire content" },
+            { e: "😀", k: "sourire joie content grinning" },
+            { e: "😃", k: "sourire content heureux" },
+            { e: "😄", k: "sourire yeux rire" },
+            { e: "😁", k: "content souriant" },
+            { e: "😆", k: "rire yeux fermés" },
+            { e: "😅", k: "sourire sueur" },
+            { e: "🤣", k: "rouler par terre rire" },
             { e: "😂", k: "rire larmes mdr lol" },
+            { e: "🙂", k: "sourire léger" },
+            { e: "🙃", k: "tête à l'envers" },
+            { e: "😉", k: "clin d'oeil" },
             { e: "😊", k: "sourire heureux timide" },
+            { e: "😇", k: "ange halo" },
+            { e: "🥰", k: "coeurs amour" },
             { e: "😍", k: "amour coeur yeux" },
+            { e: "🤩", k: "yeux étoiles fan" },
+            { e: "😘", k: "bisou coeur" },
+            { e: "😋", k: "miam delicieux" },
+            { e: "😛", k: "tirer la langue" },
+            { e: "😜", k: "clin d'oeil langue" },
+            { e: "🤪", k: "fou deingo" },
+            { e: "🤗", k: "câlin" },
+            { e: "🤭", k: "chut rire main bouche" },
+            { e: "🤫", k: "chut silence" },
+            { e: "🤔", k: "réflexion penser" },
+            { e: "🤐", k: "fermé zip" },
+            { e: "🤨", k: "sceptique sourcil" },
+            { e: "😐", k: "neutre" },
+            { e: "😑", k: "sans expression" },
+            { e: "😶", k: "muet sans bouche" },
+            { e: "😏", k: "sourire en coin" },
+            { e: "😒", k: "déçu ennuyé" },
+            { e: "🙄", k: "lever les yeux" },
+            { e: "😌", k: "soulagé" },
+            { e: "😔", k: "pensif triste" },
+            { e: "😴", k: "dort zzz sommeil" },
+            { e: "😷", k: "malade masque" },
+            { e: "🤒", k: "fièvre thermometer" },
+            { e: "🤕", k: "blessé pansement" },
+            { e: "🤢", k: "nausée malade" },
+            { e: "🤮", k: "vomir" },
+            { e: "🤧", k: "éternuer mouchoir" },
+            { e: "🥵", k: "chaud sueur" },
+            { e: "🥶", k: "froid glacé" },
+            { e: "🥴", k: "étourdi ivre" },
+            { e: "😵", k: "mort vertige" },
+            { e: "🤯", k: "explosion cerveau" },
+            { e: "🤠", k: "cowboy" },
+            { e: "🥳", k: "fête anniversaire" },
             { e: "😎", k: "lunettes cool classe" },
+            { e: "🤓", k: "geek lunettes" },
+            { e: "🧐", k: "monocle enquêter" },
+            { e: "😕", k: "confus" },
+            { e: "😟", k: "inquiet" },
+            { e: "🙁", k: "légèrement triste" },
+            { e: "😮", k: "ouvert surpris" },
+            { e: "😯", k: "muet surpris" },
+            { e: "😲", k: "étonné choqué" },
+            { e: "😳", k: "rougir gêné" },
+            { e: "🥺", k: "suppliant pitié" },
+            { e: "😦", k: "bouche ouverte triste" },
+            { e: "😧", k: "angoissé" },
+            { e: "😨", k: "effrayé peur" },
+            { e: "😰", k: "peur sueur" },
+            { e: "😥", k: "triste soulagé" },
+            { e: "😢", k: "pleurer larmes" },
             { e: "😭", k: "pleurer larmes triste" },
+            { e: "😱", k: "cri peur horreur" },
+            { e: "😖", k: "frustré" },
+            { e: "😣", k: "persévérer" },
+            { e: "😞", k: "déçu" },
+            { e: "😓", k: "sueur" },
+            { e: "😩", k: "fatigué épuisé" },
+            { e: "😫", k: "fatigué" },
+            { e: "🥱", k: "bâillement ennui" },
             { e: "🔥", k: "feu flamme chaud frerot" },
             { e: "👍", k: "pouce haut like super ok" },
+            { e: "👎", k: "pouce bas dislike" },
             { e: "❤️", k: "coeur rouge amour" },
-            { e: "✨", k: "etoiles etincelles magie" }
+            { e: "💖", k: "coeur brillant" },
+            { e: "💯", k: "cent points parfait" },
+            { e: "✨", k: "etoiles etincelles magie" },
+            { e: "🎉", k: "confettis fête" },
+            { e: "🚀", k: "fusée espace" }
         ];
 
         window.renderEmojis = (filter = "") => {
@@ -194,7 +283,8 @@
                     const span = document.createElement('span');
                     span.className = 'emoji-item';
                     span.innerText = item.e;
-                    span.onclick = () => {
+                    span.onclick = (e) => {
+                        e.stopPropagation();
                         const input = document.getElementById('userInput');
                         input.value += item.e;
                         input.focus();
@@ -221,14 +311,6 @@
             }
         };
 
-        function triggerNotification(senderName, messageText) {
-            if ("Notification" in window && Notification.permission === "granted") {
-                new Notification(`Message de ${senderName}`, {
-                    body: messageText
-                });
-            }
-        }
-
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 myId = user.uid;
@@ -246,7 +328,6 @@
         window.showHome = () => {
             document.getElementById('homePage').style.display = 'flex';
             document.getElementById('chatPage').style.display = 'none';
-            document.getElementById('seeMoreOverlay').style.display = 'none';
             activeChatId = null;
         };
 
@@ -263,38 +344,19 @@
                         contactsData = contactsData.filter(u => u.uid !== fid);
                         contactsData.push(data);
                         
-                        const icon = document.createElement('div');
-                        icon.className = "contact-circle"; 
-                        icon.innerText = data.displayName[0].toUpperCase();
-                        icon.onclick = () => openChat(fid, data.displayName);
-                        iList.appendChild(icon);
+                        const item = document.createElement('div');
+                        item.className = "contact-item"; 
+                        item.innerHTML = `
+                            <div class="user-icon-wrap">${data.displayName[0].toUpperCase()}<div class="status-dot ${data.status}"></div></div>
+                            <div class="contact-info">
+                                <span class="contact-name">${data.displayName}</span>
+                                <span class="contact-status-text">${data.status === 'online' ? 'En ligne' : 'Hors ligne'}</span>
+                            </div>
+                        `;
+                        item.onclick = () => openChat(fid, data.displayName);
+                        iList.appendChild(item);
                         refreshDashboard();
-                        listenForNotifications(fid, data.displayName);
                     });
-                });
-            });
-        }
-
-        function listenForNotifications(friendId, friendName) {
-            const ids = [myId, friendId].sort();
-            const chatId = ids[0] + "_" + ids[1];
-            
-            if (activeListeners.has(chatId)) return;
-            activeListeners.add(chatId);
-
-            let initialLoad = true;
-            const chatRef = query(ref(db, `chats/${chatId}`), limitToLast(1));
-            
-            onValue(chatRef, (snap) => {
-                if (initialLoad) {
-                    initialLoad = false;
-                    return;
-                }
-                snap.forEach(m => {
-                    const msg = m.val();
-                    if (msg.authorUid !== myId && (activeChatId !== chatId || document.hidden)) {
-                        triggerNotification(friendName, msg.text);
-                    }
                 });
             });
         }
@@ -302,12 +364,19 @@
         function refreshDashboard() {
             const onArr = contactsData.filter(u => u.status === 'online');
             const offArr = contactsData.filter(u => u.status === 'offline');
-            document.getElementById('onLabel').innerText = `En ligne (${onArr.length}) :`;
-            document.getElementById('offLabel').innerText = `Hors ligne (${offArr.length}) :`;
+            document.getElementById('onLabel').innerText = `En ligne (${onArr.length})`;
+            document.getElementById('offLabel').innerText = `Hors ligne (${offArr.length})`;
 
-            const cardHtml = (u) => `<div class="contact-card" onclick="openChat('${u.uid}', '${u.displayName}')"><div class="user-icon-wrap">${u.displayName[0].toUpperCase()}<div class="status-dot ${u.status}"></div></div><div class="user-name-big">${u.displayName}</div></div>`;
-            document.getElementById('onPreview').innerHTML = onArr.length ? cardHtml(onArr[0]) : "";
-            document.getElementById('offPreview').innerHTML = offArr.length ? cardHtml(offArr[0]) : "";
+            const renderCard = (u) => `
+                <div class="contact-item" onclick="openChat('${u.uid}', '${u.displayName}')" style="background:var(--bg-dark);">
+                    <div class="user-icon-wrap">${u.displayName[0].toUpperCase()}<div class="status-dot ${u.status}"></div></div>
+                    <div class="contact-info">
+                        <span class="contact-name">${u.displayName}</span>
+                    </div>
+                </div>`;
+            
+            document.getElementById('onPreview').innerHTML = onArr.map(renderCard).join('') || "<p style='font-size:12px; color:var(--text-muted);'>Aucun ami en ligne</p>";
+            document.getElementById('offPreview').innerHTML = offArr.map(renderCard).join('') || "<p style='font-size:12px; color:var(--text-muted);'>Aucun ami hors ligne</p>";
         }
 
         window.openChat = (fid, fname) => {
@@ -316,7 +385,6 @@
             document.getElementById('chatTitle').innerText = fname;
             document.getElementById('homePage').style.display = 'none';
             document.getElementById('chatPage').style.display = 'flex';
-            document.getElementById('seeMoreOverlay').style.display = 'none';
             
             onValue(ref(db, `chats/${activeChatId}`), (snap) => {
                 const mDiv = document.getElementById('messages'); 
@@ -324,41 +392,28 @@
                 snap.forEach(m => {
                     const val = m.val();
                     const isMe = val.authorUid === myId;
-                    const wrap = document.createElement('div');
-                    wrap.style = `display:flex; flex-direction:column; max-width:100%; align-self:${isMe?'flex-end':'flex-start'}; align-items:${isMe?'flex-end':'flex-start'}`;
+                    const wrapper = document.createElement('div');
+                    wrapper.className = `bubble-wrapper ${isMe ? 'me' : 'friend'}`;
                     
                     let reactionsHtml = "";
                     if (val.reactions) {
                         const counts = {};
                         Object.values(val.reactions).forEach(r => counts[r] = (counts[r] || 0) + 1);
                         const badges = Object.entries(counts).map(([r, c]) => `${r}${c > 1 ? ' '+c : ''}`).join(' ');
-                        reactionsHtml = `<div style="font-size:12px; background:#18191c; border-radius:12px; padding:2px 8px; margin-top:-6px; z-index:2; border:1px solid rgba(255,255,255,0.12); align-self:${isMe?'flex-end':'flex-start'}">${badges}</div>`;
+                        reactionsHtml = `<div style="font-size:11px; background:var(--bg-dark); border-radius:10px; padding:2px 6px; margin-top:2px; border:1px solid rgba(255,255,255,0.08);">${badges}</div>`;
                     }
 
                     const safeText = (val.text || "").replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
-                    wrap.innerHTML = `
-                        <div class="bubble" oncontextmenu="showCtx(event, '${m.key}', ${isMe}, '${safeText}')" style="background:${isMe?'var(--msg-me)':'var(--msg-friend)'}; border-radius:18px; border-bottom-${isMe?'right':'left'}-radius:4px;">
-                            ${val.text}
-                        </div>
+                    wrapper.innerHTML = `
+                        <div class="bubble" oncontextmenu="showCtx(event, '${m.key}', ${isMe}, '${safeText}')">${val.text}</div>
                         ${reactionsHtml}
                     `;
-                    mDiv.appendChild(wrap);
+                    mDiv.appendChild(wrapper);
                 });
                 mDiv.scrollTop = mDiv.scrollHeight;
             });
         };
-
-        window.openSeeMore = (type) => {
-            const grid = document.getElementById('seeMoreGrid'); 
-            grid.innerHTML = "";
-            document.getElementById('seeMoreOverlay').style.display = 'flex';
-            document.getElementById('seeMoreTitle').innerText = type === 'online' ? "Amis en ligne" : "Amis hors ligne";
-            contactsData.filter(c => c.status === type).forEach(c => {
-                grid.innerHTML += `<div class="contact-card" onclick="openChat('${c.uid}', '${c.displayName}')"><div class="user-icon-wrap">${c.displayName[0].toUpperCase()}<div class="status-dot ${c.status}"></div></div><div class="user-name-big">${c.displayName}</div></div>`;
-            });
-        };
-        window.closeSeeMore = () => document.getElementById('seeMoreOverlay').style.display = 'none';
 
         function loadRequests() {
             onValue(ref(db, `requests/${myId}`), (snap) => {
@@ -366,11 +421,15 @@
                 if(!rList) return;
                 rList.innerHTML = "";
                 if (!snap.exists()) {
-                    rList.innerHTML = "<p style='color:#80848e; font-size:12px;'>Aucune demande</p>";
+                    rList.innerHTML = "<p style='color:var(--text-muted); font-size:12px;'>Aucune demande</p>";
                     return;
                 }
                 snap.forEach(c => {
-                    rList.innerHTML += `<div style="padding:8px; background:#1e1f22; border-radius:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:12px;"><span>${c.val().fromName}</span><button onclick="acceptInvite('${c.key}')" style="background:var(--online); color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">OK</button></div>`;
+                    rList.innerHTML += `
+                        <div style="padding:8px; background:var(--bg-dark); border-radius:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+                            <span style="font-weight:500;">${c.val().fromName}</span>
+                            <button onclick="acceptInvite('${c.key}')" style="background:var(--online); padding:4px 8px; font-size:11px;">Accepter</button>
+                        </div>`;
                 });
             });
         }
@@ -381,7 +440,7 @@
                 await set(ref(db, `contacts/${fid}/${myId}`), { uid: myId });
                 await remove(ref(db, `requests/${myId}/${fid}`));
             } catch (err) {
-                console.error("Erreur lors de l'acceptation :", err);
+                console.error("Erreur :", err);
             }
         };
 
@@ -401,8 +460,8 @@
         document.getElementById('loginBtn').onclick = () => {
             const e = document.getElementById('email').value.trim();
             const p = document.getElementById('pass').value;
-            if(!e || !p) return alert("Veuillez remplir tous les champs.");
-            signInWithEmailAndPassword(auth, e, p).catch(err => alert("Erreur de connexion : " + err.message));
+            if(!e || !p) return alert("Remplis tous les champs.");
+            signInWithEmailAndPassword(auth, e, p).catch(err => alert("Erreur : " + err.message));
         };
 
         document.getElementById('sendInviteBtn').onclick = async (e) => {
@@ -410,7 +469,7 @@
             const emailInput = document.getElementById('friendEmail');
             const email = emailInput.value.trim().toLowerCase();
             
-            if(!email) return alert("Entrez un email.");
+            if(!email) return alert("Entre un email.");
 
             try {
                 const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
@@ -418,19 +477,18 @@
 
                 if(snap.exists()){
                     const tid = Object.keys(snap.val())[0];
-                    if(tid === myId) return alert("Vous ne pouvez pas vous ajouter vous-même.");
+                    if(tid === myId) return alert("Impossible de t'ajouter toi-même.");
                     
                     const me = await get(ref(db, `users/${myId}`));
-                    const myName = (me.exists() && me.val().displayName) ? me.val().displayName : "Un ami";
+                    const myName = (me.exists() && me.val().displayName) ? me.val().displayName : "Quelqu'un";
 
                     await set(ref(db, `requests/${tid}/${myId}`), { fromUid: myId, fromName: myName });
                     alert("Demande envoyée !"); 
                     closeAddModal();
                 } else {
-                    alert("Utilisateur non trouvé.");
+                    alert("Utilisateur introuvable.");
                 }
             } catch (err) {
-                console.error("Erreur d'envoi :", err);
                 alert("Erreur : " + err.message);
             }
         };
@@ -445,18 +503,11 @@
             document.getElementById('ctxDelete').style.display = isMe ? 'flex' : 'none';
 
             m.style.display = 'block';
+            let posX = Math.min(e.clientX, window.innerWidth - 180);
+            let posY = Math.min(e.clientY, window.innerHeight - 150);
 
-            const menuWidth = m.offsetWidth || 180;
-            const menuHeight = m.offsetHeight || 150;
-            
-            let posX = e.clientX;
-            let posY = e.clientY;
-
-            if (posX + menuWidth > window.innerWidth) posX = window.innerWidth - menuWidth - 10;
-            if (posY + menuHeight > window.innerHeight) posY = window.innerHeight - menuHeight - 10;
-
-            m.style.left = Math.max(10, posX) + 'px'; 
-            m.style.top = Math.max(10, posY) + 'px'; 
+            m.style.left = posX + 'px'; 
+            m.style.top = posY + 'px'; 
         };
 
         window.hideCtx = () => {
@@ -482,8 +533,8 @@
         };
         
         window.editMsg = () => { 
-            const t = prompt("Nouveau message :", selectedMsgText); 
-            if(t && selectedMsgId && activeChatId) {
+            const t = prompt("Modifier le message :", selectedMsgText); 
+            if(t !== null && selectedMsgId && activeChatId) {
                 update(ref(db, `chats/${activeChatId}/${selectedMsgId}`), { text: t + " (modifié)" }); 
             }
             hideCtx();
