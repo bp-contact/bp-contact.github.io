@@ -2,472 +2,190 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BlocPlay | Mobile App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application de Chat</title>
     <style>
         :root {
-            --bg-main: #0f1012;
-            --bg-sidebar: #18191c;
-            --bg-chat: #1e1f22;
-            --bg-card: #2b2d31;
+            --bg-main: #313338;
+            --bg-side: #2b2d31;
+            --bg-dark: #1e1f22;
+            --text: #f2f3f5;
+            --msg-me: #0084ff;
+            --msg-friend: #383a40;
+            --online: #23a55a;
+            --offline: #80848e;
             --accent: #5865f2;
-            --msg-me: #5865f2;
-            --msg-friend: #2b2d31;
-            --text-main: #f2f3f5;
-            --text-muted: #949ba4;
-            --online: #23a559;
-            --danger: #ed4245;
         }
 
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body, html { height: 100%; width: 100%; background: #000; color: var(--text-main); overflow: hidden; position: fixed; }
-        
-        /* Conteneur App Style Mobile */
-        .app-container { 
-            display: flex; height: 100dvh; width: 100vw; max-width: 480px; margin: 0 auto; 
-            background: var(--bg-main); position: relative; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8);
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg-main); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar Navigation Mobile Slider */
-        .side-panels { 
-            position: absolute; inset: 0; display: flex; z-index: 2000; 
-            transform: translateX(-100%); transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-        .side-panels.open { transform: translateX(0); }
-        .contacts-bar { width: 68px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 12px; border-right: 1px solid #18191c; }
-        .bp-logo { width: 44px; height: 44px; background: var(--accent); border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 800; color: white; font-size: 18px; }
-        .contact-circle { width: 44px; height: 44px; background: var(--bg-card); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 16px; border: 1px solid rgba(255,255,255,0.05); }
-        .sidebar-info { flex: 1; background: var(--bg-sidebar); display: flex; flex-direction: column; }
+        /* Layout */
+        #sidePanels { width: 260px; background: var(--bg-side); display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.05); }
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
 
-        /* Main Content Area */
-        .main-content { flex: 1; position: relative; height: 100%; background: var(--bg-chat); display: flex; flex-direction: column; width: 100%; }
-
-        /* Dashboard & Cards Look */
-        .scroll-page { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
-        .contact-card { 
-            background: var(--bg-card); border-radius: 16px; padding: 14px 16px; color: var(--text-main); 
-            display: flex; align-items: center; gap: 14px; margin-top: 8px; cursor: pointer; transition: background 0.15s, transform 0.1s;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .contact-card:active { transform: scale(0.98); background: #313338; }
-        .user-icon-wrap { width: 46px; height: 46px; background: #404249; border-radius: 50%; position: relative; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; flex-shrink: 0; }
-        .status-dot { position: absolute; bottom: 0; right: 0; width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--bg-card); }
-        .status-dot.online { background: var(--online); }
-        .status-dot.offline { background: #808080; }
-        .user-name-big { font-size: 17px; color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* Chat UI */
-        #chatPage { display: none; flex-direction: column; height: 100%; position: relative; background: var(--bg-chat); }
-        #messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { 
-            padding: 10px 14px; border-radius: 18px; font-size: 15px; 
-            overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; 
-            max-width: 82%; line-height: 1.4; color: white; user-select: text;
-        }
-
-        /* Barre de saisie style iOS / Android */
-        .chat-input-area { 
-            padding: 10px 12px; background: var(--bg-sidebar); border-top: 1px solid rgba(255,255,255,0.05);
-            padding-bottom: calc(10px + env(safe-area-inset-bottom)); position: relative;
-        }
-        .input-wrap { background: #2b2d31; border-radius: 24px; padding: 4px 6px 4px 14px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.08); }
-        #userInput { background: transparent; border: none; color: white; flex: 1; outline: none; font-size: 15px; height: 38px; }
-        
-        /* Boutons d'action */
-        .icon-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: color 0.15s; }
-        .icon-btn:active { color: white; background: rgba(255,255,255,0.1); }
-        #sendBtn { background: var(--accent); color: white; border: none; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
-
-        /* Clavier Émoji Popup Grand Format */
-        #emojiPicker { 
-            position: absolute; bottom: calc(100% + 8px); left: 10px; right: 10px; 
-            background: #25272b; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); 
-            display: none; flex-direction: column; height: 290px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 3000; overflow: hidden;
-        }
-        #emojiGrid { flex: 1; padding: 10px; overflow-y: auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
-        .emoji-item { font-size: 22px; cursor: pointer; padding: 6px; border-radius: 8px; user-select: none; transition: transform 0.1s; }
-        .emoji-item:active { transform: scale(1.3); background: rgba(255,255,255,0.1); }
-        .emoji-search-bar { padding: 8px 10px; background: #1b1c1e; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 8px; }
-        #emojiSearch { flex: 1; background: #2b2d31; border: none; color: white; padding: 8px 12px; border-radius: 12px; font-size: 13px; outline: none; }
-
-        /* Barre de réactions rapides défilante */
-        .reaction-bar {
-            display: flex; gap: 8px; padding: 6px 4px 8px; overflow-x: auto; 
-            border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;
-            scrollbar-width: none;
-        }
-        .reaction-bar::-webkit-scrollbar { display: none; }
-        .reaction-bar span { cursor: pointer; font-size: 20px; transition: transform 0.1s; flex-shrink: 0; }
-        .reaction-bar span:active { transform: scale(1.3); }
-
-        /* Overlays & Modals Mobile */
-        .overlay-full { position: absolute; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); padding: 20px; }
-        #seeMoreOverlay { position: absolute; inset: 0; background: var(--bg-chat); z-index: 1500; display: none; flex-direction: column; padding: 16px; }
-        .auth-card { background: var(--bg-sidebar); padding: 22px; border-radius: 24px; width: 100%; max-width: 320px; text-align: center; color: white; border: 1px solid rgba(255,255,255,0.08); }
-        
-        .hamburger { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 12px; }
+        /* Helpers & UI Components */
         .hidden { display: none !important; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: var(--bg-side); padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        
+        input, button { outline: none; border: none; }
+        input { background: var(--bg-dark); color: white; padding: 10px 14px; border-radius: 8px; width: 100%; margin-bottom: 10px; }
+        button { background: var(--accent); color: white; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        button:hover { opacity: 0.9; }
+
+        /* Contact Lists & Cards */
+        .contact-circle { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; margin-bottom: 8px; }
+        .contact-card { display: flex; align-items: center; gap: 12px; padding: 10px; background: var(--bg-dark); border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
+        .user-icon-wrap { position: relative; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .status-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--bg-dark); }
+        .status-dot.online { background: var(--online); }
+        .status-dot.offline { background: var(--offline); }
+
+        /* Chat Area */
+        #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .bubble { padding: 10px 14px; max-width: 70%; word-break: break-word; font-size: 14px; line-height: 1.4; }
+        .chat-input-area { padding: 12px; background: var(--bg-side); display: flex; gap: 8px; align-items: center; position: relative; }
+
+        /* Context Menu & Emoji Picker */
+        #ctxMenu { position: fixed; background: var(--bg-dark); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px; display: none; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+        .ctx-item { padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 8px; }
+        .ctx-item:hover { background: var(--accent); }
+
+        #emojiPicker { position: absolute; bottom: 60px; right: 12px; width: 300px; height: 320px; background: var(--bg-dark); border-radius: 12px; display: none; flex-direction: column; padding: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 100; }
+        #emojiGrid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; font-size: 20px; text-align: center; }
+        .emoji-item { cursor: pointer; padding: 4px; border-radius: 4px; }
+        .emoji-item:hover { background: var(--bg-side); }
     </style>
 </head>
-<body onclick="hideCtx(); hideEmojiPicker(event);">
+<body onclick="hideCtx(); hideEmojiPicker(event)">
 
-    <div class="app-container">
-
-        <div id="ctxMenu" style="position:fixed; background:#111214; border-radius:14px; padding:8px; z-index:9000; display:none; width:220px; box-shadow: 0 8px 25px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.12);">
-            <div class="reaction-bar">
-                <span onclick="addReaction('❤️')">❤️</span>
-                <span onclick="addReaction('👍')">👍</span>
-                <span onclick="addReaction('😂')">😂</span>
-                <span onclick="addReaction('😮')">😮</span>
-                <span onclick="addReaction('🔥')">🔥</span>
-                <span onclick="addReaction('💩')">💩</span>
-                <span onclick="addReaction('🙏')">🙏</span>
-                <span onclick="addReaction('🎉')">🎉</span>
-                <span onclick="addReaction('🚀')">🚀</span>
-                <span onclick="addReaction('💯')">💯</span>
-            </div>
-            <div onclick="copyMsg()" style="padding:10px 12px; cursor:pointer; color:white; font-size:14px; border-radius:8px; display:flex; align-items:center; gap:8px;">📋 Copier</div>
-            <div id="ctxEdit" onclick="editMsg()" style="padding:10px 12px; cursor:pointer; color:white; font-size:14px; border-radius:8px; display:flex; align-items:center; gap:8px;">✏️ Modifier</div>
-            <div id="ctxDelete" onclick="deleteMsg()" style="padding:10px 12px; cursor:pointer; color:var(--danger); font-size:14px; border-radius:8px; display:flex; align-items:center; gap:8px;">🗑️ Supprimer</div>
+    <div id="sidePanels">
+        <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 18px;">Discussion</h2>
+            <button onclick="openAddModal()" style="padding: 6px 10px; font-size: 12px;">+ Ami</button>
         </div>
-
-        <div id="loginOverlay" class="overlay-full">
-            <div class="auth-card">
-                <h2 style="margin-bottom:16px; font-size:22px;">BlocPlay</h2>
-                <input type="email" id="email" placeholder="Email" style="width:100%; padding:12px; margin-bottom:10px; border-radius:12px; border:none; background:#1e1f22; color:white; font-size:14px; outline:none;">
-                <input type="password" id="pass" placeholder="Mot de passe" style="width:100%; padding:12px; margin-bottom:16px; border-radius:12px; border:none; background:#1e1f22; color:white; font-size:14px; outline:none;">
-                
-                <button id="loginBtn" style="width:100%; padding:12px; background:var(--accent); color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer; font-size:14px; margin-bottom:10px;">CONNEXION</button>
-                <button id="signupBtn" onclick="window.location.href='https://blocplay-beta.github.io/signup-redirect-to-bp-contact-app'" style="width:100%; padding:12px; background:transparent; color:var(--text-muted); border:1px solid rgba(255,255,255,0.2); border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px;">S'INSCRIRE</button>
-            </div>
-        </div>
-
-<div id="addModal" class="modal hidden">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Ajouter un ami</h3>
-            <span class="close-btn" onclick="closeAddModal()">&times;</span>
-        </div>
-        <div class="modal-body">
-            <input type="email" id="friendEmail" placeholder="Ex: ami@email.com" />
-            <button id="sendInviteBtn">Envoyer la demande</button>
+        <div id="iconsList" style="padding: 0 16px; flex: 1; overflow-y: auto;"></div>
+        <div style="padding: 16px;">
+            <h4 style="font-size: 12px; margin-bottom: 8px; color: #b5bac1;">DEMANDES</h4>
+            <div id="requestsList"></div>
         </div>
     </div>
-</div>
 
- 
-            <div class="side-panels" id="sidePanels">
-            <nav class="contacts-bar">
-                <div class="bp-logo" onclick="showHome()">BP</div>
-                <div id="iconsList" style="display:contents;"></div>
-                <div class="contact-circle" style="color:var(--online); border:2px dashed #444; font-size:20px;" onclick="document.getElementById('addModal').classList.remove('hidden')">+</div>
-            </nav>
-            <aside class="sidebar-info">
-                <div style="padding:16px; font-weight:bold; font-size:14px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
-                    <span>Demandes</span>
-                    <button onclick="toggleMenu()" style="background:none; border:none; color:var(--text-muted); font-size:18px;">✕</button>
-                </div>
-                <div id="requestsList" style="padding:10px; flex:1; overflow-y:auto;"></div>
-                
-                <button onclick="requestNotificationPermission()" style="padding:14px 16px; color:var(--accent); background:none; border:none; text-align:left; cursor:pointer; font-weight:600; font-size:13px; border-top:1px solid rgba(255,255,255,0.05);">Activer les notifs</button>
-                <button onclick="auth.signOut().then(()=>location.reload())" style="padding:14px 16px; color:var(--danger); background:none; border:none; text-align:left; cursor:pointer; font-weight:bold; font-size:13px;">DÉCONNEXION</button>
-            </aside>
-        </div>
-
-        <div class="main-content">
-            <div id="homePage" class="scroll-page">
-                <div style="display:flex; align-items:center; font-size:20px; color:white; font-weight:bold; margin-bottom:4px;">
-                    <button class="hamburger" onclick="toggleMenu()">☰</button> Accueil
-                </div>
-                <section>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span id="onLabel" style="font-weight:600; font-size:14px; color:var(--text-muted);">En ligne (0) :</span>
-                        <span style="color:var(--accent); cursor:pointer; font-size:13px; font-weight:500;" onclick="openSeeMore('online')">Voir plus ></span>
-                    </div>
-                    <div id="onPreview"></div>
-                </section>
-                <section>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span id="offLabel" style="font-weight:600; font-size:14px; color:var(--text-muted);">Hors ligne (0) :</span>
-                        <span style="color:var(--accent); cursor:pointer; font-size:13px; font-weight:500;" onclick="openSeeMore('offline')">Voir plus ></span>
-                    </div>
-                    <div id="offPreview"></div>
-                </section>
+    <div class="main-content">
+        <div id="homePage" style="flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 20px;">
+            <h3>Tableau de bord</h3>
+            <div>
+                <span id="onLabel">En ligne :</span>
+                <div id="onPreview"></div>
+                <button onclick="openSeeMore('online')" style="font-size: 12px; margin-top: 4px;">Voir tout</button>
             </div>
-
-            <div id="chatPage">
-                <header style="height:56px; padding:0 12px; display:flex; align-items:center; border-bottom:1px solid rgba(255,255,255,0.05); background:var(--bg-sidebar);">
-                    <button class="hamburger" onclick="toggleMenu()">☰</button>
-                    <span id="chatTitle" style="font-weight:bold; font-size:16px;">Discussion</span>
-                </header>
-                
-                <div id="messages"></div>
-
-                <div class="chat-input-area">
-                    <div id="emojiPicker" onclick="event.stopPropagation()">
-                        <div id="emojiGrid"></div>
-                        <div class="emoji-search-bar">
-                            <input type="text" id="emojiSearch" placeholder="Rechercher un émoji (ex: cœur, rire, feu, chat, café)..." oninput="filterEmojis(this.value)">
-                        </div>
-                    </div>
-
-                    <div class="input-wrap">
-                        <input type="text" id="userInput" placeholder="Écrire un message..." onkeypress="if(event.key==='Enter') sendMessage()">
-                        <button class="icon-btn" onclick="toggleEmojiPicker(event)" title="Ajouter un émoji">😀</button>
-                        <button id="sendBtn" onclick="sendMessage()">➤</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="seeMoreOverlay">
-                <div style="display:flex; align-items:center; margin-bottom:16px;">
-                    <button class="hamburger" onclick="toggleMenu()">☰</button>
-                    <span id="seeMoreTitle" style="font-size:18px; font-weight:bold;">Liste</span>
-                    <button onclick="closeSeeMore()" style="margin-left:auto; background:none; border:none; color:var(--accent); font-weight:bold; font-size:14px;">Fermer</button>
-                </div>
-                <div id="seeMoreGrid" style="display:flex; flex-direction:column; gap:10px; overflow-y:auto;"></div>
+            <div>
+                <span id="offLabel">Hors ligne :</span>
+                <div id="offPreview"></div>
+                <button onclick="openSeeMore('offline')" style="font-size: 12px; margin-top: 4px;">Voir tout</button>
             </div>
         </div>
 
+        <div id="chatPage" style="display: none; flex-direction: column; height: 100%;">
+            <div style="padding: 14px; background: var(--bg-side); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="chatTitle">Ami</h3>
+                <button onclick="showHome()" style="background: transparent; color: #b5bac1;">Fermer</button>
+            </div>
+            <div id="messages"></div>
+            <div class="chat-input-area">
+                <button onclick="toggleEmojiPicker(event)" style="background: transparent; font-size: 18px;">😊</button>
+                <input type="text" id="userInput" placeholder="Écrire un message..." onkeypress="if(event.key==='Enter') sendMessage()" />
+                <button onclick="sendMessage()">Envoyer</button>
+
+                <div id="emojiPicker" onclick="event.stopPropagation()">
+                    <input type="text" placeholder="Rechercher..." oninput="filterEmojis(this.value)" />
+                    <div id="emojiGrid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loginOverlay" class="overlay">
+        <div class="modal-card">
+            <h3 style="margin-bottom: 12px;">Connexion</h3>
+            <input type="email" id="email" placeholder="Email" />
+            <input type="password" id="pass" placeholder="Mot de passe" />
+            <button id="loginBtn" style="width: 100%;">Se connecter</button>
+        </div>
+    </div>
+
+    <div id="addModal" class="overlay hidden">
+        <div class="modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3>Ajouter un ami</h3>
+                <span onclick="closeAddModal()" style="cursor:pointer; font-size:20px;">&times;</span>
+            </div>
+            <input type="email" id="friendEmail" placeholder="Email de votre ami" />
+            <button id="sendInviteBtn" style="width:100%;">Envoyer la demande</button>
+        </div>
+    </div>
+
+    <div id="seeMoreOverlay" class="overlay" style="display: none;">
+        <div class="modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 id="seeMoreTitle">Amis</h3>
+                <span onclick="closeSeeMore()" style="cursor:pointer; font-size:20px;">&times;</span>
+            </div>
+            <div id="seeMoreGrid" style="max-height:300px; overflow-y:auto;"></div>
+        </div>
+    </div>
+
+    <div id="ctxMenu">
+        <div class="ctx-item" onclick="addReaction('❤️')">❤️ Réagir</div>
+        <div class="ctx-item" onclick="copyMsg()">📋 Copier</div>
+        <div class="ctx-item" id="ctxEdit" onclick="editMsg()">✏️ Modifier</div>
+        <div class="ctx-item" id="ctxDelete" onclick="deleteMsg()" style="color:#f23f43;">🗑️ Supprimer</div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove, update, onDisconnect, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, push, update, remove, onValue, get, query, orderByChild, equalTo, onDisconnect, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // CONFIGURATION FIREBASE
         const firebaseConfig = {
-            apiKey: "AIzaSyAQHLAG_Dvnc-a8LDJ__05oRwMmEtUkn04",
-            authDomain: "blocplay-a9417.firebaseapp.com",
-            databaseURL: "https://blocplay-a9417-default-rtdb.firebaseio.com",
-            projectId: "blocplay-a9417",
-            storageBucket: "blocplay-a9417.firebasestorage.app",
-            messagingSenderId: "540161549188",
-            appId: "1:540161549188:web:ffe799fa3747cb42f333d1"
+            apiKey: "VOTRE_API_KEY",
+            authDomain: "VOTRE_PROJECT.firebaseapp.com",
+            databaseURL: "https://VOTRE_PROJECT-default-rtdb.firebaseio.com",
+            projectId: "VOTRE_PROJECT",
+            storageBucket: "VOTRE_PROJECT.appspot.com",
+            messagingSenderId: "XXXXXXXXXX",
+            appId: "X:XXXXXXXXXX:web:XXXXXXXXXX"
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
         const auth = getAuth(app);
-        let myId = null, activeChatId = null, contactsData = [], selectedMsgId = null, selectedMsgText = "";
-        const activeListeners = new Set();
+        const db = getDatabase(app);
 
-        // Émojis enrichis avec plus de 180 options et mots-clés en Français
+        let myId = null;
+        let activeChatId = null;
+        let contactsData = [];
+        let activeListeners = new Set();
+        let selectedMsgId = null;
+        let selectedMsgText = "";
+
         const emojiList = [
-            // Visages & Émotions
-            { e: "😀", k: "sourire content heureuse joie visage" },
-            { e: "😃", k: "sourire content heureux rire visage" },
-            { e: "😄", k: "sourire content heureux rire yeux" },
-            { e: "😁", k: "sourire dents heureux joie" },
-            { e: "😆", k: "mdr mort de rire fort" },
-            { e: "😅", k: "sourire sueur gêne soulagement" },
-            { e: "🤣", k: "ptdr ptdrrr mort de rire pleure sol" },
-            { e: "😂", k: "lol mdr pleure de joie larmes" },
-            { e: "🙂", k: "sourire calme sympa" },
-            { e: "🙃", k: "envers fou blague" },
-            { e: "😉", k: "clin d'oeil blague complice" },
-            { e: "😊", k: "sourire rougeurs timide mignon" },
-            { e: "😇", k: "ange aureole innocent sage" },
-            { e: "🥰", k: "amour coeurs bisou affection" },
-            { e: "😍", k: "amour yeux coeurs adorer amoureux" },
-            { e: "🤩", k: "etoiles yeux fantastique star" },
-            { e: "😘", k: "bisou coeur amour affection" },
-            { e: "😗", k: "bisou neutre" },
-            { e: "😚", k: "bisou yeux fermes" },
-            { e: "😋", k: "miam delicieux langue" },
-            { e: "😛", k: "langue blague" },
-            { e: "😜", k: "langue clin d'oeil blague" },
-            { e: "🤪", k: "fou dingue debile" },
-            { e: "😝", k: "langue yeux fermes" },
-            { e: "🤑", k: "argent dollars riche sous" },
-            { e: "🤗", k: "calin embrasser ouvert" },
-            { e: "🤭", k: "oups main bouche chut" },
-            { e: "🤫", k: "chut silence secret discret" },
-            { e: "🤔", k: "penser reflexion reflechir doute" },
-            { e: "🤐", k: "zip bouche fermee motus" },
-            { e: "🤨", k: "sourcil doute sceptique bizarre" },
-            { e: "😐", k: "neutre impassible" },
-            { e: "😑", k: "sans expression blase" },
-            { e: "😶", k: "sans bouche discret" },
-            { e: "😏", k: "sourire coin malin drague" },
-            { e: "😒", k: "blase ennerve bof agace" },
-            { e: "🙄", k: "yeux ciel ennerve pff" },
-            { e: "😬", k: "grimace malaise oups gêne" },
-            { e: "🤥", k: "menteur pinocchio nez" },
-            { e: "😌", k: "soulage zen calme" },
-            { e: "😔", k: "triste deçu penaud" },
-            { e: "😪", k: "fatigue dodo goutte" },
-            { e: "🤤", k: "bave miam envie" },
-            { e: "😴", k: "dodo sommeil nuit zzz fatigue" },
-            { e: "😷", k: "masque malade virus" },
-            { e: "🤒", k: "thermometre malade fievre" },
-            { e: "🤕", k: "bande blesse bobo" },
-            { e: "🤢", k: "vomi degout malade vert" },
-            { e: "🤮", k: "vomi degout beurk" },
-            { e: "🤧", k: "echarpe mouchoir rhume atchoum" },
-            { e: "🥵", k: "chaud canicule rouge transpiration" },
-            { e: "🥶", k: "froid gel glace bleu" },
-            { e: "🥴", k: "bourre saoul bizarre" },
-            { e: "😵", k: "vertige KO mort" },
-            { e: "🤯", k: "explosion cerveau choc incroyable" },
-            { e: "🤠", k: "cowboy chapeau" },
-            { e: "🥳", k: "fete anniversaire confettis" },
-            { e: "😎", k: "lunettes soleil cool classe" },
-            { e: "🤓", k: "lunettes intello geek" },
-            { e: "🧐", k: "monocle inspecteur enquête" },
-            { e: "😕", k: "confus perdu" },
-            { e: "😟", k: "inquiet soucieux" },
-            { e: "🙁", k: "triste pas content" },
-            { e: "😮", k: "surpris oh bouche ouverte" },
-            { e: "😯", k: "choc oh" },
-            { e: "😲", k: "etonne stupéfait" },
-            { e: "😳", k: "gêne rouge honte choque" },
-            { e: "🥺", k: "prie stp s'il te plait mimi triste yeux" },
-            { e: "😦", k: "peur inquiet" },
-            { e: "😨", k: "effraye peur panic" },
-            { e: "😰", k: "sueur anxieux" },
-            { e: "😢", k: "triste lorme unique" },
-            { e: "😭", k: "pleurer larmes triste torrent" },
-            { e: "😱", k: "peur cri choque horreur" },
-            { e: "😖", k: "enerve frustre" },
-            { e: "😣", k: "effort douleux" },
-            { e: "😞", k: "deçu triste" },
-            { e: "😓", k: "sueur triste" },
-            { e: "😩", k: "epuise fatigue" },
-            { e: "😫", k: "marre fatigue" },
-            { e: "🥱", k: "bailler dodo fatigue" },
-            { e: "😤", k: "colere fumee nez" },
-            { e: "😡", k: "rouge fache enerve colere" },
-            { e: "😠", k: "fache enerve" },
-            { e: "🤬", k: "insulte gros mots colere" },
-            { e: "😈", k: "diable démon sourire malin" },
-            { e: "👿", k: "diable fâche démon" },
-            { e: "💀", k: "mort crane mort de rire" },
-            { e: "💩", k: "caca merde drôle" },
-            { e: "🤡", k: "clown cirque drôle" },
-            { e: "👹", k: "ogre monstre" },
-            { e: "👻", k: "fantôme peur halloween" },
-            { e: "👽", k: "alien etranger espace" },
-            { e: "🤖", k: "robot tech bot" },
-
-            // Gestes & Mains
-            { e: "👋", k: "salut coucou main revoir" },
-            { e: "🤚", k: "main levee stop" },
-            { e: "🖐️", k: "main doigts cartes" },
-            { e: "✋", k: "stop main levee cinq" },
-            { e: "🖖", k: "vulcan spock star trek" },
-            { e: "👌", k: "ok parfait valide zéro" },
-            { e: "🤌", k: "italien quoi demande" },
-            { e: "🤏", k: "un peu petit pince" },
-            { e: "✌️", k: "victoire paix deux" },
-            { e: "🤞", k: "croiser doigts chance esperer" },
-            { e: "🤟", k: "love amour geste" },
-            { e: "🤘", k: "rock metal cornes" },
-            { e: "🤙", k: "appelle moi tel chill" },
-            { e: "👈", k: "gauche montre" },
-            { e: "👉", k: "droite montre" },
-            { e: "👆", k: "haut montre" },
-            { e: "🖕", k: "doigt d'honneur insulte" },
-            { e: "👇", k: "bas montre" },
-            { e: "👍", k: "pouce haut like super ok valide bravo" },
-            { e: "👎", k: "pouce bas nul dislike mauvais" },
-            { e: "✊", k: "poing force combat" },
-            { e: "👊", k: "poing choc check bro" },
-            { e: "👏", k: "applaudir bravo félicitation" },
-            { e: "🙌", k: "mains levees fete bravo" },
-            { e: "👐", k: "mains ouvertes" },
-            { e: "🤲", k: "prière mains" },
-            { e: "🤝", k: "poignee de main accord" },
-            { e: "🙏", k: "prier merci stp s'il te plait svp" },
-            { e: "💪", k: "biceps force muscle fort" },
-            { e: "👀", k: "yeux regarder vu mate" },
-            { e: "🧠", k: "cerveau intelligent brain" },
-            { e: "💋", k: "bisou levres rouge" },
-
-            // Cœurs & Passion
-            { e: "❤️", k: "coeur rouge amour love passion" },
-            { e: "🧡", k: "coeur orange" },
-            { e: "💛", k: "coeur jaune amitie" },
-            { e: "💚", k: "coeur vert nature" },
-            { e: "💙", k: "coeur bleu" },
-            { e: "💜", k: "coeur violet" },
-            { e: "🖤", k: "coeur noir" },
-            { e: "🤍", k: "coeur blanc" },
-            { e: "🤎", k: "coeur marron" },
-            { e: "💔", k: "coeur brise rupture triste" },
-            { e: "❣️", k: "coeur exclamation" },
-            { e: "💕", k: "coeurs amour" },
-            { e: "💞", k: "coeurs tournants" },
-            { e: "💓", k: "coeur battant" },
-            { e: "💗", k: "coeur grandissant" },
-            { e: "💖", k: "coeur etoiles brillant" },
-            { e: "🔥", k: "feu flamme chaud incendie frerot" },
-            { e: "💥", k: "explosion boom collision" },
-            { e: "✨", k: "etoiles etincelles magie brillant" },
-            { e: "🌟", k: "etoile brillante" },
-            { e: "💯", k: "100 cent parfait note" },
-
-            // Animaux & Nature
-            { e: "🐶", k: "chien toutou animal" },
-            { e: "🐱", k: "chat minou animal" },
-            { e: "🐭", k: "souris animal" },
-            { e: "🦊", k: "renard animal" },
-            { e: "🐻", k: "ours animal" },
-            { e: "🐼", k: "panda animal" },
-            { e: "🐨", k: "koala animal" },
-            { e: "🦁", k: "lion roi animal" },
-            { e: "🦄", k: "licorne magie" },
-            { e: "🐝", k: "abeille miel" },
-            { e: "🦋", k: "papillon joli" },
-            { e: "🌴", k: "palmier plage vacances" },
-            { e: "🍀", k: "trefle chance vert" },
-            { e: "🌹", k: "rose fleur amour" },
-            { e: "🌻", k: "tournesol fleur" },
-
-            // Nourriture & Boisson
-            { e: "🍕", k: "pizza fromage miam" },
-            { e: "🍔", k: "burger hamburger fastfood" },
-            { e: "🍟", k: "frites fastfood" },
-            { e: "🍿", k: "popcorn cinema film" },
-            { e: "🥓", k: "bacon viande" },
-            { e: "🍩", k: "donut beignet sucre" },
-            { e: "🍪", k: "cookie biscuit" },
-            { e: "🎂", k: "gâteau anniversaire fete" },
-            { e: "🍫", k: "chocolat bonbon" },
-            { e: "☕", k: "cafe pause chaud te" },
-            { e: "🧃", k: "jus boisson paille" },
-            { e: "🍺", k: "biere apéro boisson" },
-            { e: "🍻", k: "bieres tchin apero" },
-
-            // Sports & Gaming
-            { e: "⚽", k: "foot ballon football sport" },
-            { e: "🏀", k: "basket ballon sport" },
-            { e: "🏈", k: "football americain sport" },
-            { e: "🎾", k: "tennis balle sport" },
-            { e: "🎯", k: "cible flechette parfait" },
-            { e: "🎮", k: "manette jeu gaming jeux video" },
-            { e: "🕹️", k: "joystick arcade retro" },
-            { e: "🎲", k: "de jeu hasard" },
-            { e: "🎧", k: "casque musique ecouter audio" },
-            { e: "🎸", k: "guitare musique rock" },
-            { e: "🎤", k: "micro chanter musique" },
-
-            // Objets & Symboles
-            { e: "🚀", k: "fusee espace decollage rapide" },
-            { e: "👑", k: "couronne roi reine prince queen" },
-            { e: "💎", k: "diamant bijou riche" },
-            { e: "💡", k: "ampoule idee lumiere" },
-            { e: "💰", k: "sac argent cash sous" },
-            { e: "🚗", k: "voiture auto permis" },
-            { e: "🎉", k: "fete confettis fêter anniversaire" },
-            { e: "🎁", k: "cadeau anniversaire fete" },
-            { e: "⚠️", k: "attention danger warning" },
-            { e: "✅", k: "valide vert ok check" },
-            { e: "❌", k: "croix rouge non interdit" }
+            { e: "😀", k: "sourire joire content" },
+            { e: "😂", k: "rire larmes mdr lol" },
+            { e: "😊", k: "sourire heureux timide" },
+            { e: "😍", k: "amour coeur yeux" },
+            { e: "😎", k: "lunettes cool classe" },
+            { e: "😭", k: "pleurer larmes triste" },
+            { e: "🔥", k: "feu flamme chaud frerot" },
+            { e: "👍", k: "pouce haut like super ok" },
+            { e: "❤️", k: "coeur rouge amour" },
+            { e: "✨", k: "etoiles etincelles magie" }
         ];
 
         window.renderEmojis = (filter = "") => {
             const grid = document.getElementById('emojiGrid');
+            if(!grid) return;
             grid.innerHTML = "";
             const cleanFilter = filter.toLowerCase().trim();
             
@@ -496,32 +214,17 @@
             if (isHidden) renderEmojis();
         };
 
-        window.hideEmojiPicker = (e) => {
+        window.hideEmojiPicker = () => {
             const picker = document.getElementById('emojiPicker');
             if (picker && picker.style.display === 'flex') {
                 picker.style.display = 'none';
             }
         };
 
-        window.requestNotificationPermission = () => {
-            if ("Notification" in window) {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        alert("Notifications activées avec succès !");
-                    } else if (permission === "denied") {
-                        alert("Notifications refusées dans les paramètres de votre navigateur.");
-                    }
-                });
-            } else {
-                alert("Votre navigateur ne supporte pas les notifications Web.");
-            }
-        };
-
         function triggerNotification(senderName, messageText) {
             if ("Notification" in window && Notification.permission === "granted") {
                 new Notification(`Message de ${senderName}`, {
-                    body: messageText,
-                    icon: "https://via.placeholder.com/128/5865f2/ffffff?text=BP"
+                    body: messageText
                 });
             }
         }
@@ -533,34 +236,36 @@
                 await update(uRef, { uid: myId, email: user.email.toLowerCase(), displayName: user.email.split('@')[0], status: "online" });
                 onDisconnect(uRef).update({ status: "offline" });
                 document.getElementById('loginOverlay').classList.add('hidden');
-                loadContacts(); loadRequests();
+                loadContacts(); 
+                loadRequests();
             } else { 
                 document.getElementById('loginOverlay').classList.remove('hidden'); 
             }
         });
 
-        window.toggleMenu = () => document.getElementById('sidePanels').classList.toggle('open');
         window.showHome = () => {
             document.getElementById('homePage').style.display = 'flex';
             document.getElementById('chatPage').style.display = 'none';
             document.getElementById('seeMoreOverlay').style.display = 'none';
-            document.getElementById('sidePanels').classList.remove('open');
             activeChatId = null;
         };
 
         function loadContacts() {
             onValue(ref(db, `contacts/${myId}`), (snap) => {
-                const iList = document.getElementById('iconsList'); iList.innerHTML = "";
+                const iList = document.getElementById('iconsList'); 
+                iList.innerHTML = "";
                 contactsData = [];
                 snap.forEach(c => {
                     const fid = c.val().uid;
                     onValue(ref(db, `users/${fid}`), (uSnap) => {
-                        const data = uSnap.val(); if(!data) return;
+                        const data = uSnap.val(); 
+                        if(!data) return;
                         contactsData = contactsData.filter(u => u.uid !== fid);
                         contactsData.push(data);
                         
                         const icon = document.createElement('div');
-                        icon.className = "contact-circle"; icon.innerText = data.displayName[0];
+                        icon.className = "contact-circle"; 
+                        icon.innerText = data.displayName[0].toUpperCase();
                         icon.onclick = () => openChat(fid, data.displayName);
                         iList.appendChild(icon);
                         refreshDashboard();
@@ -600,7 +305,7 @@
             document.getElementById('onLabel').innerText = `En ligne (${onArr.length}) :`;
             document.getElementById('offLabel').innerText = `Hors ligne (${offArr.length}) :`;
 
-            const cardHtml = (u) => `<div class="contact-card" onclick="openChat('${u.uid}', '${u.displayName}')"><div class="user-icon-wrap">${u.displayName[0]}<div class="status-dot ${u.status}"></div></div><div class="user-name-big">${u.displayName}</div></div>`;
+            const cardHtml = (u) => `<div class="contact-card" onclick="openChat('${u.uid}', '${u.displayName}')"><div class="user-icon-wrap">${u.displayName[0].toUpperCase()}<div class="status-dot ${u.status}"></div></div><div class="user-name-big">${u.displayName}</div></div>`;
             document.getElementById('onPreview').innerHTML = onArr.length ? cardHtml(onArr[0]) : "";
             document.getElementById('offPreview').innerHTML = offArr.length ? cardHtml(offArr[0]) : "";
         }
@@ -612,10 +317,10 @@
             document.getElementById('homePage').style.display = 'none';
             document.getElementById('chatPage').style.display = 'flex';
             document.getElementById('seeMoreOverlay').style.display = 'none';
-            document.getElementById('sidePanels').classList.remove('open');
             
             onValue(ref(db, `chats/${activeChatId}`), (snap) => {
-                const mDiv = document.getElementById('messages'); mDiv.innerHTML = "";
+                const mDiv = document.getElementById('messages'); 
+                mDiv.innerHTML = "";
                 snap.forEach(m => {
                     const val = m.val();
                     const isMe = val.authorUid === myId;
@@ -627,7 +332,7 @@
                         const counts = {};
                         Object.values(val.reactions).forEach(r => counts[r] = (counts[r] || 0) + 1);
                         const badges = Object.entries(counts).map(([r, c]) => `${r}${c > 1 ? ' '+c : ''}`).join(' ');
-                        reactionsHtml = `<div style="font-size:12px; background:#18191c; border-radius:12px; padding:2px 8px; margin-top:-6px; z-index:2; border:1px solid rgba(255,255,255,0.12); box-shadow:0 2px 6px rgba(0,0,0,0.3); align-self:${isMe?'flex-end':'flex-start'}">${badges}</div>`;
+                        reactionsHtml = `<div style="font-size:12px; background:#18191c; border-radius:12px; padding:2px 8px; margin-top:-6px; z-index:2; border:1px solid rgba(255,255,255,0.12); align-self:${isMe?'flex-end':'flex-start'}">${badges}</div>`;
                     }
 
                     const safeText = (val.text || "").replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
@@ -645,20 +350,27 @@
         };
 
         window.openSeeMore = (type) => {
-            const grid = document.getElementById('seeMoreGrid'); grid.innerHTML = "";
+            const grid = document.getElementById('seeMoreGrid'); 
+            grid.innerHTML = "";
             document.getElementById('seeMoreOverlay').style.display = 'flex';
             document.getElementById('seeMoreTitle').innerText = type === 'online' ? "Amis en ligne" : "Amis hors ligne";
             contactsData.filter(c => c.status === type).forEach(c => {
-                grid.innerHTML += `<div class="contact-card" onclick="openChat('${c.uid}', '${c.displayName}')"><div class="user-icon-wrap">${c.displayName[0]}<div class="status-dot ${c.status}"></div></div><div class="user-name-big">${c.displayName}</div></div>`;
+                grid.innerHTML += `<div class="contact-card" onclick="openChat('${c.uid}', '${c.displayName}')"><div class="user-icon-wrap">${c.displayName[0].toUpperCase()}<div class="status-dot ${c.status}"></div></div><div class="user-name-big">${c.displayName}</div></div>`;
             });
         };
         window.closeSeeMore = () => document.getElementById('seeMoreOverlay').style.display = 'none';
 
         function loadRequests() {
             onValue(ref(db, `requests/${myId}`), (snap) => {
-                const rList = document.getElementById('requestsList'); rList.innerHTML = "";
+                const rList = document.getElementById('requestsList'); 
+                if(!rList) return;
+                rList.innerHTML = "";
+                if (!snap.exists()) {
+                    rList.innerHTML = "<p style='color:#80848e; font-size:12px;'>Aucune demande</p>";
+                    return;
+                }
                 snap.forEach(c => {
-                    rList.innerHTML += `<div style="padding:10px; background:#2b2d31; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:13px;"><span>${c.val().fromName}</span><button onclick="acceptInvite('${c.key}')" style="background:var(--online); color:white; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-weight:bold;">OK</button></div>`;
+                    rList.innerHTML += `<div style="padding:8px; background:#1e1f22; border-radius:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:12px;"><span>${c.val().fromName}</span><button onclick="acceptInvite('${c.key}')" style="background:var(--online); color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">OK</button></div>`;
                 });
             });
         }
@@ -676,6 +388,12 @@
             hideEmojiPicker();
         };
 
+        window.openAddModal = () => document.getElementById('addModal').classList.remove('hidden');
+        window.closeAddModal = () => {
+            document.getElementById('addModal').classList.add('hidden');
+            document.getElementById('friendEmail').value = "";
+        };
+
         document.getElementById('loginBtn').onclick = () => {
             const e = document.getElementById('email').value.trim();
             const p = document.getElementById('pass').value;
@@ -683,86 +401,67 @@
             signInWithEmailAndPassword(auth, e, p).catch(err => alert("Erreur de connexion : " + err.message));
         };
 
-document.getElementById('sendInviteBtn').onclick = async (e) => {
-    if (e) e.preventDefault(); // Empêche le rechargement de la page si c'est un <form>
-    
-    const emailInput = document.getElementById('friendEmail');
-    if (!emailInput) return alert("Champ email introuvable dans le HTML.");
-
-    const email = emailInput.value.trim().toLowerCase();
-    if (!email) return alert("Veuillez entrer un email.");
-
-    try {
-        // 1. Recherche de l'utilisateur par email
-        const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
-        const snap = await get(q);
-
-        if (!snap.exists()) {
-            return alert("Aucun utilisateur trouvé avec cet email.");
-        }
-
-        // Récupère l'UID trouvé
-        const usersObj = snap.val();
-        const friendUid = Object.keys(usersObj)[0];
-
-        if (friendUid === myId) {
-            return alert("Vous ne pouvez pas vous ajouter vous-même !");
-        }
-
-        // 2. Récupère le nom de l'expéditeur
-        const meSnap = await get(ref(db, `users/${myId}`));
-        const myData = meSnap.val() || {};
-        const myName = myData.displayName || "Un utilisateur";
-
-        // 3. Envoie la demande
-        await set(ref(db, `requests/${friendUid}/${myId}`), { 
-            fromUid: myId, 
-            fromName: myName 
-        });
-
-        alert("Demande envoyée avec succès !");
-        const modal = document.getElementById('addModal');
-        if (modal) modal.classList.add('hidden');
-        emailInput.value = "";
-
-    } catch (err) {
-        console.error("Erreur d'envoi :", err);
-        alert("Erreur : " + err.message);
-    }
-};
-
-document.getElementById('ctxMenu'); 
+        document.getElementById('sendInviteBtn').onclick = async (e) => {
+            if (e) e.preventDefault();
+            const emailInput = document.getElementById('friendEmail');
+            const email = emailInput.value.trim().toLowerCase();
             
+            if(!email) return alert("Entrez un email.");
+
+            try {
+                const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
+                const snap = await get(q);
+
+                if(snap.exists()){
+                    const tid = Object.keys(snap.val())[0];
+                    if(tid === myId) return alert("Vous ne pouvez pas vous ajouter vous-même.");
+                    
+                    const me = await get(ref(db, `users/${myId}`));
+                    const myName = (me.exists() && me.val().displayName) ? me.val().displayName : "Un ami";
+
+                    await set(ref(db, `requests/${tid}/${myId}`), { fromUid: myId, fromName: myName });
+                    alert("Demande envoyée !"); 
+                    closeAddModal();
+                } else {
+                    alert("Utilisateur non trouvé.");
+                }
+            } catch (err) {
+                console.error("Erreur d'envoi :", err);
+                alert("Erreur : " + err.message);
+            }
+        };
+
+        window.showCtx = (e, mid, isMe, text) => { 
+            e.preventDefault(); 
+            selectedMsgId = mid; 
+            selectedMsgText = text;
+
+            const m = document.getElementById('ctxMenu'); 
             document.getElementById('ctxEdit').style.display = isMe ? 'flex' : 'none';
             document.getElementById('ctxDelete').style.display = isMe ? 'flex' : 'none';
 
             m.style.display = 'block';
 
-            const menuWidth = m.offsetWidth || 220;
-            const menuHeight = m.offsetHeight || 190;
+            const menuWidth = m.offsetWidth || 180;
+            const menuHeight = m.offsetHeight || 150;
             
             let posX = e.clientX;
             let posY = e.clientY;
 
-            if (posX + menuWidth > window.innerWidth) {
-                posX = window.innerWidth - menuWidth - 10;
-            }
-            if (posY + menuHeight > window.innerHeight) {
-                posY = window.innerHeight - menuHeight - 10;
-            }
-            if (posX < 10) posX = 10;
-            if (posY < 10) posY = 10;
+            if (posX + menuWidth > window.innerWidth) posX = window.innerWidth - menuWidth - 10;
+            if (posY + menuHeight > window.innerHeight) posY = window.innerHeight - menuHeight - 10;
 
-            m.style.left = posX + 'px'; 
-            m.style.top = posY + 'px'; 
+            m.style.left = Math.max(10, posX) + 'px'; 
+            m.style.top = Math.max(10, posY) + 'px'; 
         };
 
-        window.hideCtx = () => document.getElementById('ctxMenu').style.display = 'none';
+        window.hideCtx = () => {
+            const m = document.getElementById('ctxMenu');
+            if(m) m.style.display = 'none';
+        };
         
         window.copyMsg = () => {
-            if (selectedMsgText) {
-                navigator.clipboard.writeText(selectedMsgText);
-            }
+            if (selectedMsgText) navigator.clipboard.writeText(selectedMsgText);
             hideCtx();
         };
 
@@ -773,11 +472,17 @@ document.getElementById('ctxMenu');
             hideCtx();
         };
 
-        window.deleteMsg = () => remove(ref(db, `chats/${activeChatId}/${selectedMsgId}`));
+        window.deleteMsg = () => {
+            if(selectedMsgId && activeChatId) remove(ref(db, `chats/${activeChatId}/${selectedMsgId}`));
+            hideCtx();
+        };
         
         window.editMsg = () => { 
             const t = prompt("Nouveau message :", selectedMsgText); 
-            if(t) update(ref(db, `chats/${activeChatId}/${selectedMsgId}`), { text: t + " (modifié)" }); 
+            if(t && selectedMsgId && activeChatId) {
+                update(ref(db, `chats/${activeChatId}/${selectedMsgId}`), { text: t + " (modifié)" }); 
+            }
+            hideCtx();
         };
     </script>
 </body>
