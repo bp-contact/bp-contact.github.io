@@ -128,7 +128,7 @@
                 <input type="password" id="pass" placeholder="Mot de passe" style="width:100%; padding:12px; margin-bottom:16px; border-radius:12px; border:none; background:#1e1f22; color:white; font-size:14px; outline:none;">
                 
                 <button id="loginBtn" style="width:100%; padding:12px; background:var(--accent); color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer; font-size:14px; margin-bottom:10px;">CONNEXION</button>
-                <button id="signupBtn" onclick="window.location.href='https://blocplay-beta.github.io/signup-redirect-to-bp-contact-app'" style="width:100%; padding:12px; background:transparent; color:var(--text-muted); border:1px solid rgba(255,255,255,0.2); border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px;">S'INSCRIRE</button>
+                <button id="signupBtn" onclick="window.location.href='https://blocplay-beta.github.io/signup/url-redirect-to-bp-contact-app'" style="width:100%; padding:12px; background:transparent; color:var(--text-muted); border:1px solid rgba(255,255,255,0.2); border-radius:12px; font-weight:bold; cursor:pointer; font-size:13px;">S'INSCRIRE</button>
             </div>
         </div>
 
@@ -400,27 +400,33 @@
         });
 
         function loadContacts(uid) {
-            const contactsRef = ref(db, 'users/' + uid + '/contacts');
-            onValue(contactsRef, (snapshot) => {
-                const data = snapshot.val();
-                contactsData = [];
-                if(data) {
-                    Object.keys(data).forEach(key => {
-                        get(ref(db, 'users/' + key)).then(uSnap => {
-                            const uData = uSnap.val() || {};
-                            contactsData.push({ 
-                                id: key, 
-                                name: uData.displayName || uData.email || 'Inconnu',
-                                status: 'offline' 
-                            });
-                            updateHomePreviews();
-                        });
+    const contactsRef = ref(db, 'users/' + uid + '/contacts');
+    onValue(contactsRef, async (snapshot) => {
+        const data = snapshot.val();
+        contactsData = [];
+        
+        if (data) {
+            const contactKeys = Object.keys(data);
+            for (const key of contactKeys) {
+                try {
+                    const uSnap = await get(ref(db, 'users/' + key));
+                    const uData = uSnap.val() || {};
+                    contactsData.push({ 
+                        id: key, 
+                        name: uData.displayName || uData.email || 'Utilisateur',
+                        status: 'offline' 
                     });
-                } else {
-                    updateHomePreviews();
+                } catch (e) {
+                    console.error("Erreur chargement contact:", e);
                 }
-            });
+            }
+            updateHomePreviews();
+        } else {
+            contactsData = [];
+            updateHomePreviews();
         }
+    });
+}
 
         function listenToStatuses() {
             const statusRef = ref(db, 'status');
