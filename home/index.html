@@ -17,7 +17,6 @@
             --text-muted: #949ba4;
             --online: #23a559;
             --danger: #ed4245;
-            --alert-yellow: #fee75c;
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -48,7 +47,7 @@
         .msg-wrapper { display: flex; flex-direction: column; max-width: 85%; position: relative; }
         .msg-me { align-self: flex-end; align-items: flex-end; }
         .msg-friend { align-self: flex-start; align-items: flex-start; }
-        
+
         .bubble { 
             padding: 10px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4;
             overflow-wrap: anywhere; word-break: break-word; cursor: pointer; user-select: none;
@@ -93,13 +92,6 @@
         .card input[type="email"], .card input[type="password"], .card input[type="text"] { width: 100%; padding: 12px; background: #1e1f22; border: 1px solid #444; border-radius: 8px; color: white; margin: 10px 0; outline: none; }
         .btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; margin-top: 10px; }
         .hidden { display: none !important; }
-        
-        /* Styles spécifiques au popup de Nouveautés */
-        .alert-card { border-top: 5px solid var(--alert-yellow); }
-        .alert-text { font-size: 14px; line-height: 1.5; margin: 15px 0; text-align: left; color: var(--text-main); }
-        .checkbox-container { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; font-size: 13px; text-align: left; }
-        .checkbox-container input[type="checkbox"] { width: 16px; height: 16px; margin: 0; cursor: pointer; }
-        .checkbox-container label { cursor: pointer; user-select: none; }
     </style>
 </head>
 <body onclick="hideMenu()">
@@ -126,21 +118,6 @@
         </div>
     </div>
 
-    <div id="newsOverlay" class="overlay hidden">
-        <div class="card alert-card">
-            <h2>Nouveautés</h2>
-            <p class="alert-text">
-                BlocPlay possède maintenant un wiki, ou vous y trouverez plusieurs infos utiles, et également à propos de BP Contact. Maintenant, découvrez en plus et plongez plus profondément dans l'univers BlocPlay.
-            </p>
-            <div class="checkbox-container">
-                <input type="checkbox" id="hideNewsCheck">
-                <label for="hideNewsCheck">Ne plus afficher ceci</label>
-            </div>
-            <button class="btn" id="wikiBtn" style="background: var(--alert-yellow); color: #1e1f22;">Voir le site</button>
-            <button class="btn" id="closeNewsBtn" style="background: #4e5058;">Fermer</button>
-        </div>
-    </div>
-
     <div id="addModal" class="overlay hidden">
         <div class="card">
             <h3>Demande de contact</h3>
@@ -161,6 +138,7 @@
                 <div class="sidebar-header"><span>Demandes</span></div>
                 <div id="requestsList"></div>
                 <div style="flex:1;"></div>
+                <a href="download/BlocPlay Contact.apk" style="padding:15px; color:var(--accent); text-decoration:none; font-weight:bold; display:block;">TÉLÉCHARGER</a>
                 <button id="logoutBtn" style="padding:15px; background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold; text-align:left;">DÉCONNEXION</button>
             </aside>
         </div>
@@ -206,36 +184,15 @@
                 currentUser = user; myId = user.uid;
                 const userRef = ref(db, `users/${myId}`);
                 await update(userRef, { uid: myId, email: user.email.toLowerCase(), displayName: user.displayName || user.email.split('@')[0] });
-                
+
                 document.getElementById('loginOverlay').classList.add('hidden');
-                
-                // --- LOGIQUE POPUP NOUVEAUTÉS ---
-                if (!localStorage.getItem('hideBpNews')) {
-                    document.getElementById('newsOverlay').classList.remove('hidden');
-                }
 
                 loadContacts(); loadRequests();
                 setTimeout(() => firstLoad = false, 3000);
             } else { 
                 document.getElementById('loginOverlay').classList.remove('hidden'); 
-                document.getElementById('newsOverlay').classList.add('hidden');
             }
         });
-
-        // --- GESTION POPUP NOUVEAUTÉS ---
-        function closeNewsPopup() {
-            if (document.getElementById('hideNewsCheck').checked) {
-                localStorage.setItem('hideBpNews', 'true');
-            }
-            document.getElementById('newsOverlay').classList.add('hidden');
-        }
-
-        document.getElementById('closeNewsBtn').onclick = closeNewsPopup;
-        
-        document.getElementById('wikiBtn').onclick = () => {
-            window.open('https://bp-help.github.io', '_blank'); 
-            closeNewsPopup();
-        };
 
         // --- GESTION MESSAGES ---
         function sendMessage() {
@@ -256,7 +213,7 @@
             menu.style.display = 'block';
             menu.style.left = Math.min(e.pageX, window.innerWidth - 190) + 'px';
             menu.style.top = Math.min(e.pageY, window.innerHeight - 200) + 'px';
-            
+
             document.getElementById('editOpt').style.display = isMe ? 'block' : 'none';
             document.getElementById('delOpt').style.display = isMe ? 'block' : 'none';
         };
@@ -283,7 +240,7 @@
             activeChatId = ids[0] + "_" + ids[1];
             document.getElementById('chatTitle').innerText = friendName;
             document.getElementById('userInput').disabled = false;
-            
+
             onValue(ref(db, `chats/${activeChatId}`), (snap) => {
                 const mDiv = document.getElementById('messages');
                 mDiv.innerHTML = "";
@@ -292,11 +249,11 @@
                     const isMe = data.authorUid === myId;
                     const wrap = document.createElement('div');
                     wrap.className = `msg-wrapper ${isMe ? 'msg-me' : 'msg-friend'}`;
-                    
+
                     const b = document.createElement('div');
                     b.className = "bubble";
                     b.innerText = data.text;
-                    
+
                     b.oncontextmenu = (e) => showMenu(e, m.key, isMe);
                     b.ontouchstart = (e) => { longPressTimer = setTimeout(() => showMenu(e.touches[0], m.key, isMe), 500); };
                     b.ontouchend = () => clearTimeout(longPressTimer);
