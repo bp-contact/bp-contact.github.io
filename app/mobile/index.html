@@ -22,13 +22,11 @@
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body, html { height: 100%; width: 100%; background: #000; color: var(--text-main); overflow: hidden; position: fixed; }
         
-        /* Conteneur App Style Mobile */
         .app-container { 
             display: flex; height: 100dvh; width: 100vw; max-width: 480px; margin: 0 auto; 
             background: var(--bg-main); position: relative; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8);
         }
 
-        /* Sidebar Navigation Mobile Slider */
         .side-panels { 
             position: absolute; inset: 0; display: flex; z-index: 2000; 
             transform: translateX(-100%); transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
@@ -39,10 +37,8 @@
         .contact-circle { width: 44px; height: 44px; background: var(--bg-card); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 16px; border: 1px solid rgba(255,255,255,0.05); }
         .sidebar-info { flex: 1; background: var(--bg-sidebar); display: flex; flex-direction: column; }
 
-        /* Main Content Area */
         .main-content { flex: 1; position: relative; height: 100%; background: var(--bg-chat); display: flex; flex-direction: column; width: 100%; }
 
-        /* Dashboard & Cards Look */
         .scroll-page { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
         .contact-card { 
             background: var(--bg-card); border-radius: 16px; padding: 14px 16px; color: var(--text-main); 
@@ -56,7 +52,6 @@
         .status-dot.offline { background: #808080; }
         .user-name-big { font-size: 17px; color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* Chat UI */
         #chatPage { display: none; flex-direction: column; height: 100%; position: relative; background: var(--bg-chat); }
         #messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .bubble { 
@@ -65,7 +60,6 @@
             max-width: 82%; line-height: 1.4; color: white; user-select: text;
         }
 
-        /* Barre de saisie style iOS / Android */
         .chat-input-area { 
             padding: 10px 12px; background: var(--bg-sidebar); border-top: 1px solid rgba(255,255,255,0.05);
             padding-bottom: calc(10px + env(safe-area-inset-bottom)); position: relative;
@@ -73,12 +67,10 @@
         .input-wrap { background: #2b2d31; border-radius: 24px; padding: 4px 6px 4px 14px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.08); }
         #userInput { background: transparent; border: none; color: white; flex: 1; outline: none; font-size: 15px; height: 38px; }
         
-        /* Boutons d'action */
         .icon-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: color 0.15s; }
         .icon-btn:active { color: white; background: rgba(255,255,255,0.1); }
         #sendBtn { background: var(--accent); color: white; border: none; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
 
-        /* Clavier Émoji Popup Grand Format */
         #emojiPicker { 
             position: absolute; bottom: calc(100% + 8px); left: 10px; right: 10px; 
             background: #25272b; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); 
@@ -90,7 +82,6 @@
         .emoji-search-bar { padding: 8px 10px; background: #1b1c1e; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 8px; }
         #emojiSearch { flex: 1; background: #2b2d31; border: none; color: white; padding: 8px 12px; border-radius: 12px; font-size: 13px; outline: none; }
 
-        /* Barre de réactions rapides défilante */
         .reaction-bar {
             display: flex; gap: 8px; padding: 6px 4px 8px; overflow-x: auto; 
             border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 4px;
@@ -100,7 +91,6 @@
         .reaction-bar span { cursor: pointer; font-size: 20px; transition: transform 0.1s; flex-shrink: 0; }
         .reaction-bar span:active { transform: scale(1.3); }
 
-        /* Overlays & Modals Mobile */
         .overlay-full { position: absolute; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); padding: 20px; }
         #seeMoreOverlay { position: absolute; inset: 0; background: var(--bg-chat); z-index: 1500; display: none; flex-direction: column; padding: 16px; }
         .auth-card { background: var(--bg-sidebar); padding: 22px; border-radius: 24px; width: 100%; max-width: 320px; text-align: center; color: white; border: 1px solid rgba(255,255,255,0.08); }
@@ -202,7 +192,7 @@
                     <div id="emojiPicker" onclick="event.stopPropagation()">
                         <div id="emojiGrid"></div>
                         <div class="emoji-search-bar">
-                            <input type="text" id="emojiSearch" placeholder="Rechercher un émoji (ex: cœur, rire, feu, chat, café)..." oninput="filterEmojis(this.value)">
+                            <input type="text" id="emojiSearch" placeholder="Rechercher un émoji..." oninput="filterEmojis(this.value)">
                         </div>
                     </div>
 
@@ -228,7 +218,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove, update, onDisconnect, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove, update, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -245,7 +235,6 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
         let currentUser = null, myId = null, activeChatId = null, contactsData = [], selectedMsgId = null, selectedMsgText = "";
-        const activeListeners = new Set();
 
         const emojiList = [
             { e: "😀", k: "sourire content heureuse joie visage" },
@@ -286,288 +275,347 @@
             { e: "😷", k: "masque malade virus" },
             { e: "🤒", k: "thermometre malade fievre" },
             { e: "🤕", k: "bande blesse bobo" },
-{ e: "🤢", k: "nausee malade ecoeure" },
-{ e: "🤮", k: "vomir malade ecoeure" },
-{ e: "🤧", k: "eternuement atchoum malade" },
-{ e: "🥵", k: "chaud sueur canicule" },
-{ e: "🥶", k: "froid glace gele" },
-{ e: "😎", k: "cool lunettes soleil stylé" },
-{ e: "🥳", k: "fete anniversaire joyeux" },
-{ e: "😢", k: "triste larme pleurer" },
-{ e: "😭", k: "pleurer chouiner larmes" },
-{ e: "😱", k: "peur crier choque horreur" },
-{ e: "😡", k: "colere ennerve rouge" },
-{ e: "🤬", k: "insulte Jure colere" },
-{ e: "👍", k: "pouce oui ok bien" },
-{ e: "👎", k: "pouce bas non nul" },
-{ e: "❤️", k: "coeur amour rouge" },
-{ e: "🔥", k: "feu flamme stylé super" },
-{ e: "🎉", k: "fete confetti bravo" },
-{ e: "🚀", k: "fusee rapide decollage" },
-{ e: "💩", k: "caca caca boudin drole" },
-{ e: "🙏", k: "prie merci s'il te plait" },
-{ e: "💯", k: "cent parfait score" }
-];
-// Initialisation de la grille d'émojis
-function renderEmojis(list) {
-const grid = document.getElementById('emojiGrid');
-grid.innerHTML = list.map(item => <div class="emoji-item" onclick="insertEmoji('${item.e}')">${item.e}</div>).join('');
-}
-renderEmojis(emojiList);
-window.insertEmoji = function(emoji) {
-const input = document.getElementById('userInput');
-input.value += emoji;
-input.focus();
-};
-window.filterEmojis = function(queryText) {
-const q = queryText.toLowerCase().trim();
-if(!q) {
-renderEmojis(emojiList);
-return;
-}
-const filtered = emojiList.filter(item => item.k.includes(q));
-renderEmojis(filtered);
-};
-window.toggleEmojiPicker = function(e) {
-e.stopPropagation();
-const picker = document.getElementById('emojiPicker');
-picker.style.display = picker.style.display === 'flex' ? 'none' : 'flex';
-};
-window.hideEmojiPicker = function(e) {
-const picker = document.getElementById('emojiPicker');
-if(picker) picker.style.display = 'none';
-};
-window.toggleMenu = function() {
-document.getElementById('sidePanels').classList.toggle('open');
-};
-window.showHome = function() {
-document.getElementById('chatPage').style.display = 'none';
-document.getElementById('homePage').style.display = 'flex';
-activeChatId = null;
-};
-window.openSeeMore = function(type) {
-const overlay = document.getElementById('seeMoreOverlay');
-overlay.style.display = 'flex';
-document.getElementById('seeMoreTitle').innerText = type === 'online' ? 'Amis en ligne' : 'Amis hors ligne';
-const grid = document.getElementById('seeMoreGrid');
-const targetList = type === 'online' ? contactsData.filter(c => c.status === 'online') : contactsData.filter(c => c.status !== 'online');
-grid.innerHTML = targetList.map(c => <div class="contact-card" onclick="openChat('${c.id}', '${c.name}')"> <div class="user-icon-wrap"> ${c.name.charAt(0).toUpperCase()} <span class="status-dot ${c.status}"></span> </div> <div class="user-name-big">${c.name}</div> </div>).join('');
-};
-window.closeSeeMore = function() {
-document.getElementById('seeMoreOverlay').style.display = 'none';
-};
-window.hideCtx = function() {
-const menu = document.getElementById('ctxMenu');
-if(menu) menu.style.display = 'none';
-};
-// Gestion de l'authentification Firebase
-onAuthStateChanged(auth, (user) => {
-if (user) {
-currentUser = user;
-myId = user.uid;
-document.getElementById('loginOverlay').style.display = 'none';
-// Mettre le statut en ligne
-const myStatusRef = ref(db, 'status/' + myId);
-set(myStatusRef, { status: 'online', email: user.email });
-onDisconnect(myStatusRef).set({ status: 'offline', email: user.email });
-// Charger les contacts et écouter les changements
-loadContacts(user.uid);
-loadRequests(user.uid);
-listenToStatuses();
-} else {
-document.getElementById('loginOverlay').style.display = 'flex';
-}
-});
-document.getElementById('loginBtn').addEventListener('click', () => {
-const email = document.getElementById('email').value;
-const pass = document.getElementById('pass').value;
-signInWithEmailAndPassword(auth, email, pass).catch(err => {
-alert("Erreur de connexion : " + err.message);
-});
-});
-function loadContacts(uid) {
-const contactsRef = ref(db, 'users/' + uid + '/contacts');
-onValue(contactsRef, (snapshot) => {
-const data = snapshot.val();
-contactsData = [];
-if(data) {
-Object.keys(data).forEach(key => {
-get(ref(db, 'users/' + key)).then(uSnap => {
-const uData = uSnap.val() || {};
-contactsData.push({
-id: key,
-name: uData.displayName || uData.email || 'Inconnu',
-status: 'offline'
-});
-updateHomePreviews();
-});
-});
-} else {
-updateHomePreviews();
-}
-});
-}
-function listenToStatuses() {
-const statusRef = ref(db, 'status');
-onValue(statusRef, (snapshot) => {
-const statuses = snapshot.val() || {};
-contactsData.forEach(c => {
-if(statuses[c.id] && statuses[c.id].status === 'online') {
-c.status = 'online';
-} else {
-c.status = 'offline';
-}
-});
-updateHomePreviews();
-});
-}
-function updateHomePreviews() {
-const onlineList = contactsData.filter(c => c.status === 'online');
-const offlineList = contactsData.filter(c => c.status !== 'online');
-document.getElementById('onLabel').innerText = En ligne (${onlineList.length}) :;
-document.getElementById('offLabel').innerText = Hors ligne (${offlineList.length}) :;
-document.getElementById('onPreview').innerHTML = onlineList.slice(0, 3).map(c => renderContactCard(c)).join('');
-document.getElementById('offPreview').innerHTML = offlineList.slice(0, 3).map(c => renderContactCard(c)).join('');
-}
-function renderContactCard(c) {
-return <div class="contact-card" onclick="openChat('${c.id}', '${c.name}')"> <div class="user-icon-wrap"> ${c.name.charAt(0).toUpperCase()} <span class="status-dot ${c.status}"></span> </div> <div class="user-name-big">${c.name}</div> </div>;
-}
-window.openChat = function(chatId, chatName) {
-activeChatId = chatId;
-document.getElementById('homePage').style.display = 'none';
-document.getElementById('chatPage').style.display = 'flex';
-document.getElementById('chatTitle').innerText = chatName;
-document.getElementById('sidePanels').classList.remove('open');
-loadMessages(chatId);
-};
-window.sendMessage = function() {
-const input = document.getElementById('userInput');
-const text = input.value.trim();
-if(!text || !activeChatId) return;
-const room = getChatRoomId(myId, activeChatId);
-const msgRef = push(ref(db, 'chats/' + room));
-set(msgRef, {
-sender: myId,
-text: text,
-timestamp: Date.now()
-});
-input.value = '';
-};
-function getChatRoomId(id1, id2) {
-return id1 < id2 ? ${id1}_${id2} : ${id2}_${id1};
-}
-function loadMessages(chatId) {
-const room = getChatRoomId(myId, chatId);
-const messagesRef = ref(db, 'chats/' + room);
-onValue(messagesRef, (snapshot) => {
-const data = snapshot.val();
-const container = document.getElementById('messages');
-container.innerHTML = '';
-if(data) {
-Object.keys(data).forEach(key => {
-const msg = data[key];
-const isMe = msg.sender === myId;
-const bubble = document.createElement('div');
-bubble.className = 'bubble';
-bubble.style.alignSelf = isMe ? 'flex-end' : 'flex-start';
-bubble.style.background = isMe ? 'var(--msg-me)' : 'var(--msg-friend)';
-bubble.innerText = msg.text;
-bubble.oncontextmenu = (e) => showCtxMenu(e, key, isMe, msg.text);
-container.appendChild(bubble);
-});
-container.scrollTop = container.scrollHeight;
-}
-});
-}
-let currentMsgKey = null;
-window.showCtxMenu = function(e, msgKey, isMe, text) {
-e.preventDefault();
-currentMsgKey = msgKey;
-selectedMsgText = text;
-const menu = document.getElementById('ctxMenu');
-menu.style.display = 'block';
-menu.style.left = Math.min(e.pageX, window.innerWidth - 230) + 'px';
-menu.style.top = Math.min(e.pageY, window.innerHeight - 220) + 'px';
-document.getElementById('ctxEdit').style.display = isMe ? 'flex' : 'none';
-document.getElementById('ctxDelete').style.display = isMe ? 'flex' : 'none';
-};
-window.copyMsg = function() {
-navigator.clipboard.writeText(selectedMsgText);
-hideCtx();
-};
-window.deleteMsg = function() {
-if(currentMsgKey && activeChatId) {
-const room = getChatRoomId(myId, activeChatId);
-remove(ref(db, 'chats/' + room + '/' + currentMsgKey));
-}
-hideCtx();
-};
-window.editMsg = function() {
-const newText = prompt("Modifier le message :", selectedMsgText);
-if(newText !== null && currentMsgKey && activeChatId) {
-const room = getChatRoomId(myId, activeChatId);
-update(ref(db, 'chats/' + room + '/' + currentMsgKey), { text: newText + " (modifié)" });
-}
-hideCtx();
-};
-window.addReaction = function(emoji) {
-if(currentMsgKey && activeChatId) {
-const room = getChatRoomId(myId, activeChatId);
-update(ref(db, 'chats/' + room + '/' + currentMsgKey + '/reactions'), { [myId]: emoji });
-}
-hideCtx();
-};
-function loadRequests(uid) {
-const reqRef = ref(db, 'requests/' + uid);
-onValue(reqRef, (snapshot) => {
-const data = snapshot.val();
-const list = document.getElementById('requestsList');
-list.innerHTML = '';
-if(data) {
-Object.keys(data).forEach(fromUid => {
-const req = data[fromUid];
-const item = document.createElement('div');
-item.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#2b2d31; padding:8px 12px; border-radius:10px; margin-bottom:8px; font-size:13px;";
-item.innerHTML = <span>${req.fromName || 'Utilisateur'}</span> <button style="background:var(--online); color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-weight:bold;">OK</button>;
-item.querySelector('button').onclick = async () => {
-await set(ref(db, users/${myId}/contacts/${fromUid}), { uid: fromUid });
-await set(ref(db, users/${fromUid}/contacts/${myId}), { uid: myId });
-await remove(ref(db, requests/${myId}/${fromUid}));
-};
-list.appendChild(item);
-});
-}
-});
-}
-document.getElementById('sendInviteBtn').onclick = async () => {
-const email = document.getElementById('friendEmail').value.trim().toLowerCase();
-const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
-const snap = await get(q);
-if(snap.exists()) {
-const tid = Object.keys(snap.val())[0];
-if(tid === myId) {
-alert("Vous ne pouvez pas vous ajouter vous-même !");
-return;
-}
-const meSnap = await get(ref(db, 'users/' + myId));
-const meName = meSnap.val() ? meSnap.val().displayName : 'Utilisateur';
-await set(ref(db, requests/${tid}/${myId}), { fromUid: myId, fromName: meName, timestamp: Date.now() });
-alert("Invitation envoyée avec succès !");
-document.getElementById('addModal').classList.add('hidden');
-document.getElementById('friendEmail').value = '';
-} else {
-alert("Aucun utilisateur trouvé avec cet email.");
-}
-};
-window.requestNotificationPermission = function() {
-if("Notification" in window) {
-Notification.requestPermission().then(permission => {
-if(permission === "granted") {
-alert("Notifications activées avec succès !");
-}
-});
-}
-};
-</script>
+            { e: "🤢", k: "nausee malade ecoeure" },
+            { e: "🤮", k: "vomir malade ecoeure" },
+            { e: "🤧", k: "eternuement atchoum malade" },
+            { e: "🥵", k: "chaud sueur canicule" },
+            { e: "🥶", k: "froid glace gele" },
+            { e: "😎", k: "cool lunettes soleil stylé" },
+            { e: "🥳", k: "fete anniversaire joyeux" },
+            { e: "😢", k: "triste larme pleurer" },
+            { e: "😭", k: "pleurer chouiner larme" },
+            { e: "😱", k: "peur crier choque horreur" },
+            { e: "😡", k: "colere ennerve rouge" },
+            { e: "🤬", k: "insulte Jure colere" },
+            { e: "👍", k: "pouce oui ok bien" },
+            { e: "👎", k: "pouce bas non nul" },
+            { e: "❤️", k: "coeur amour rouge" },
+            { e: "🔥", k: "feu flamme stylé super" },
+            { e: "🎉", k: "fete confetti bravo" },
+            { e: "🚀", k: "fusee rapide decollage" },
+            { e: "💩", k: "caca caca boudin drole" },
+            { e: "🙏", k: "prie merci s'il te plait" },
+            { e: "💯", k: "cent parfait score" }
+        ];
+
+        function renderEmojis(list) {
+            const grid = document.getElementById('emojiGrid');
+            if(grid) {
+                grid.innerHTML = list.map(item => `
+                    <div class="emoji-item" onclick="insertEmoji('${item.e}')">${item.e}</div>
+                `).join('');
+            }
+        }
+        renderEmojis(emojiList);
+
+        window.insertEmoji = function(emoji) {
+            const input = document.getElementById('userInput');
+            input.value += emoji;
+            input.focus();
+        };
+
+        window.filterEmojis = function(queryText) {
+            const q = queryText.toLowerCase().trim();
+            if(!q) {
+                renderEmojis(emojiList);
+                return;
+            }
+            const filtered = emojiList.filter(item => item.k.includes(q));
+            renderEmojis(filtered);
+        };
+
+        window.toggleEmojiPicker = function(e) {
+            e.stopPropagation();
+            const picker = document.getElementById('emojiPicker');
+            picker.style.display = picker.style.display === 'flex' ? 'none' : 'flex';
+        };
+
+        window.hideEmojiPicker = function(e) {
+            const picker = document.getElementById('emojiPicker');
+            if(picker) picker.style.display = 'none';
+        };
+
+        window.toggleMenu = function() {
+            document.getElementById('sidePanels').classList.toggle('open');
+        };
+
+        window.showHome = function() {
+            document.getElementById('chatPage').style.display = 'none';
+            document.getElementById('homePage').style.display = 'flex';
+            activeChatId = null;
+        };
+
+        window.openSeeMore = function(type) {
+            const overlay = document.getElementById('seeMoreOverlay');
+            overlay.style.display = 'flex';
+            document.getElementById('seeMoreTitle').innerText = type === 'online' ? 'Amis en ligne' : 'Amis hors ligne';
+            const grid = document.getElementById('seeMoreGrid');
+            const targetList = type === 'online' ? contactsData.filter(c => c.status === 'online') : contactsData.filter(c => c.status !== 'online');
+            
+            grid.innerHTML = targetList.map(c => `
+                <div class="contact-card" onclick="openChat('${c.id}', '${c.name}')">
+                    <div class="user-icon-wrap">
+                        ${c.name.charAt(0).toUpperCase()}
+                        <span class="status-dot ${c.status}"></span>
+                    </div>
+                    <div class="user-name-big">${c.name}</div>
+                </div>
+            `).join('');
+        };
+
+        window.closeSeeMore = function() {
+            document.getElementById('seeMoreOverlay').style.display = 'none';
+        };
+
+        window.hideCtx = function() {
+            const menu = document.getElementById('ctxMenu');
+            if(menu) menu.style.display = 'none';
+        };
+
+        // Gestion de l'authentification Firebase
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                myId = user.uid;
+                document.getElementById('loginOverlay').style.display = 'none';
+                
+                const myStatusRef = ref(db, 'status/' + myId);
+                set(myStatusRef, { status: 'online', email: user.email });
+                onDisconnect(myStatusRef).set({ status: 'offline', email: user.email });
+
+                loadContacts(user.uid);
+                loadRequests(user.uid);
+                listenToStatuses();
+            } else {
+                document.getElementById('loginOverlay').style.display = 'flex';
+            }
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            signInWithEmailAndPassword(auth, email, pass).catch(err => {
+                alert("Erreur de connexion : " + err.message);
+            });
+        });
+
+        function loadContacts(uid) {
+            const contactsRef = ref(db, 'users/' + uid + '/contacts');
+            onValue(contactsRef, (snapshot) => {
+                const data = snapshot.val();
+                contactsData = [];
+                if(data) {
+                    Object.keys(data).forEach(key => {
+                        get(ref(db, 'users/' + key)).then(uSnap => {
+                            const uData = uSnap.val() || {};
+                            contactsData.push({ 
+                                id: key, 
+                                name: uData.displayName || uData.email || 'Inconnu',
+                                status: 'offline' 
+                            });
+                            updateHomePreviews();
+                        });
+                    });
+                } else {
+                    updateHomePreviews();
+                }
+            });
+        }
+
+        function listenToStatuses() {
+            const statusRef = ref(db, 'status');
+            onValue(statusRef, (snapshot) => {
+                const statuses = snapshot.val() || {};
+                contactsData.forEach(c => {
+                    if(statuses[c.id] && statuses[c.id].status === 'online') {
+                        c.status = 'online';
+                    } else {
+                        c.status = 'offline';
+                    }
+                });
+                updateHomePreviews();
+            });
+        }
+
+        function updateHomePreviews() {
+            const onlineList = contactsData.filter(c => c.status === 'online');
+            const offlineList = contactsData.filter(c => c.status !== 'online');
+
+            document.getElementById('onLabel').innerText = `En ligne (${onlineList.length}) :`;
+            document.getElementById('offLabel').innerText = `Hors ligne (${offlineList.length}) :`;
+
+            document.getElementById('onPreview').innerHTML = onlineList.slice(0, 3).map(c => renderContactCard(c)).join('');
+            document.getElementById('offPreview').innerHTML = offlineList.slice(0, 3).map(c => renderContactCard(c)).join('');
+        }
+
+        function renderContactCard(c) {
+            return `
+                <div class="contact-card" onclick="openChat('${c.id}', '${c.name}')">
+                    <div class="user-icon-wrap">
+                        ${c.name.charAt(0).toUpperCase()}
+                        <span class="status-dot ${c.status}"></span>
+                    </div>
+                    <div class="user-name-big">${c.name}</div>
+                </div>
+            `;
+        }
+
+        window.openChat = function(chatId, chatName) {
+            activeChatId = chatId;
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('chatPage').style.display = 'flex';
+            document.getElementById('chatTitle').innerText = chatName;
+            document.getElementById('sidePanels').classList.remove('open');
+            loadMessages(chatId);
+        };
+
+        window.sendMessage = function() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if(!text || !activeChatId) return;
+
+            const room = getChatRoomId(myId, activeChatId);
+            const msgRef = push(ref(db, 'chats/' + room));
+            set(msgRef, {
+                sender: myId,
+                text: text,
+                timestamp: Date.now()
+            });
+            input.value = '';
+        };
+
+        function getChatRoomId(id1, id2) {
+            return id1 < id2 ? `${id1}_${id2}` : `${id2}_${id1}`;
+        }
+
+        function loadMessages(chatId) {
+            const room = getChatRoomId(myId, chatId);
+            const messagesRef = ref(db, 'chats/' + room);
+            
+            onValue(messagesRef, (snapshot) => {
+                const data = snapshot.val();
+                const container = document.getElementById('messages');
+                container.innerHTML = '';
+                
+                if(data) {
+                    Object.keys(data).forEach(key => {
+                        const msg = data[key];
+                        const isMe = msg.sender === myId;
+                        const bubble = document.createElement('div');
+                        bubble.className = 'bubble';
+                        bubble.style.alignSelf = isMe ? 'flex-end' : 'flex-start';
+                        bubble.style.background = isMe ? 'var(--msg-me)' : 'var(--msg-friend)';
+                        bubble.innerText = msg.text;
+                        
+                        bubble.oncontextmenu = (e) => showCtxMenu(e, key, isMe, msg.text);
+                        
+                        container.appendChild(bubble);
+                    });
+                    container.scrollTop = container.scrollHeight;
+                }
+            });
+        }
+
+        let currentMsgKey = null;
+        window.showCtxMenu = function(e, msgKey, isMe, text) {
+            e.preventDefault();
+            currentMsgKey = msgKey;
+            selectedMsgText = text;
+            const menu = document.getElementById('ctxMenu');
+            menu.style.display = 'block';
+            menu.style.left = Math.min(e.pageX, window.innerWidth - 230) + 'px';
+            menu.style.top = Math.min(e.pageY, window.innerHeight - 220) + 'px';
+
+            document.getElementById('ctxEdit').style.display = isMe ? 'flex' : 'none';
+            document.getElementById('ctxDelete').style.display = isMe ? 'flex' : 'none';
+        };
+
+        window.copyMsg = function() {
+            navigator.clipboard.writeText(selectedMsgText);
+            hideCtx();
+        };
+
+        window.deleteMsg = function() {
+            if(currentMsgKey && activeChatId) {
+                const room = getChatRoomId(myId, activeChatId);
+                remove(ref(db, 'chats/' + room + '/' + currentMsgKey));
+            }
+            hideCtx();
+        };
+
+        window.editMsg = function() {
+            const newText = prompt("Modifier le message :", selectedMsgText);
+            if(newText !== null && currentMsgKey && activeChatId) {
+                const room = getChatRoomId(myId, activeChatId);
+                update(ref(db, 'chats/' + room + '/' + currentMsgKey), { text: newText + " (modifié)" });
+            }
+            hideCtx();
+        };
+
+        window.addReaction = function(emoji) {
+            if(currentMsgKey && activeChatId) {
+                const room = getChatRoomId(myId, activeChatId);
+                update(ref(db, 'chats/' + room + '/' + currentMsgKey + '/reactions'), { [myId]: emoji });
+            }
+            hideCtx();
+        };
+
+        function loadRequests(uid) {
+            const reqRef = ref(db, 'requests/' + uid);
+            onValue(reqRef, (snapshot) => {
+                const data = snapshot.val();
+                const list = document.getElementById('requestsList');
+                list.innerHTML = '';
+                if(data) {
+                    Object.keys(data).forEach(fromUid => {
+                        const req = data[fromUid];
+                        const item = document.createElement('div');
+                        item.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#2b2d31; padding:8px 12px; border-radius:10px; margin-bottom:8px; font-size:13px;";
+                        item.innerHTML = `
+                            <span>${req.fromName || 'Utilisateur'}</span>
+                            <button style="background:var(--online); color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-weight:bold;">OK</button>
+                        `;
+                        item.querySelector('button').onclick = async () => {
+                            await set(ref(db, `users/${myId}/contacts/${fromUid}`), { uid: fromUid });
+                            await set(ref(db, `users/${fromUid}/contacts/${myId}`), { uid: myId });
+                            await remove(ref(db, `requests/${myId}/${fromUid}`));
+                        };
+                        list.appendChild(item);
+                    });
+                }
+            });
+        }
+
+        document.getElementById('sendInviteBtn').onclick = async () => {
+            const email = document.getElementById('friendEmail').value.trim().toLowerCase();
+            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
+            const snap = await get(q);
+            if(snap.exists()) {
+                const tid = Object.keys(snap.val())[0];
+                if(tid === myId) {
+                    alert("Vous ne pouvez pas vous ajouter vous-même !");
+                    return;
+                }
+                const meSnap = await get(ref(db, 'users/' + myId));
+                const meName = meSnap.val() ? meSnap.val().displayName : 'Utilisateur';
+                await set(ref(db, `requests/${tid}/${myId}`), { fromUid: myId, fromName: meName, timestamp: Date.now() });
+                alert("Invitation envoyée avec succès !");
+                document.getElementById('addModal').classList.add('hidden');
+                document.getElementById('friendEmail').value = '';
+            } else {
+                alert("Aucun utilisateur trouvé avec cet email.");
+            }
+        };
+
+        window.requestNotificationPermission = function() {
+            if("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if(permission === "granted") {
+                        alert("Notifications activées avec succès !");
+                    }
+                });
+            }
+        };
+    </script>
 </body>
 </html>
