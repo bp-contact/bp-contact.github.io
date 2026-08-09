@@ -144,10 +144,10 @@
 
         <div id="addModal" class="overlay-full hidden">
             <div class="auth-card">
-                <h3 style="margin-bottom:12px; font-size:18px;">Ajouter un ami</h3>
-                <input type="email" id="friendEmail" placeholder="Email exact de l'ami" style="width:100%; padding:12px; border-radius:12px; border:none; background:#1e1f22; color:white; font-size:14px; outline:none;">
-                <button id="sendInviteBtn" style="width:100%; margin-top:14px; padding:12px; background:var(--accent); color:white; border:none; border-radius:12px; font-weight:bold; font-size:14px;">Envoyer l'invitation</button>
-                <button onclick="document.getElementById('addModal').classList.add('hidden')" style="background:none; border:none; color:var(--text-muted); margin-top:12px; cursor:pointer; font-size:13px;">Annuler</button>
+                <h2 style="margin-bottom:12px; font-size:18px;">Ajouter un ami</h2>
+                <h3 style="margin-bottom:12px; font-size:18px;">Notre application ne permet pas encore cette fonction. Pour ajouter un ami, rendez-vous sur notre site ou demandez à votre ami de vous faire une demande. Vous pouvez toujours recevoir les demandes depuis l'application.</h3>
+                <a href="https://bp-contact.github.io/home" id="sendInviteBtn" style="width:100%; margin-top:14px; padding:12px; background:var(--accent); color:white; border:none; border-radius:12px; font-weight:bold; font-size:14px;">Aller sur le site</a>
+                <button onclick="document.getElementById('addModal').classList.add('hidden')" style="background:none; border:none; color:var(--text-muted); margin-top:12px; cursor:pointer; font-size:13px;">Retour</button>
             </div>
         </div>
 
@@ -159,12 +159,12 @@
             </nav>
             <aside class="sidebar-info">
                 <div style="padding:16px; font-weight:bold; font-size:14px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
-                    <span>DEMANDES</span>
+                    <span>Demandes</span>
                     <button onclick="toggleMenu()" style="background:none; border:none; color:var(--text-muted); font-size:18px;">✕</button>
                 </div>
                 <div id="requestsList" style="padding:10px; flex:1; overflow-y:auto;"></div>
                 
-                <button onclick="requestNotificationPermission()" style="padding:14px 16px; color:var(--accent); background:none; border:none; text-align:left; cursor:pointer; font-weight:600; font-size:13px; border-top:1px solid rgba(255,255,255,0.05);">🔔 Activer notifications</button>
+                <button onclick="requestNotificationPermission()" style="padding:14px 16px; color:var(--accent); background:none; border:none; text-align:left; cursor:pointer; font-weight:600; font-size:13px; border-top:1px solid rgba(255,255,255,0.05);">Activer les notifs</button>
                 <button onclick="auth.signOut().then(()=>location.reload())" style="padding:14px 16px; color:var(--danger); background:none; border:none; text-align:left; cursor:pointer; font-weight:bold; font-size:13px;">DÉCONNEXION</button>
             </aside>
         </div>
@@ -208,7 +208,7 @@
 
                     <div class="input-wrap">
                         <input type="text" id="userInput" placeholder="Écrire un message..." onkeypress="if(event.key==='Enter') sendMessage()">
-                        <button class="icon-btn" onclick="toggleEmojiPicker(event)" title="Ajouter un émoji">😊</button>
+                        <button class="icon-btn" onclick="toggleEmojiPicker(event)" title="Ajouter un émoji">😀</button>
                         <button id="sendBtn" onclick="sendMessage()">➤</button>
                     </div>
                 </div>
