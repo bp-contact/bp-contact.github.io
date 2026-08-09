@@ -148,7 +148,7 @@
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, push, update, remove, onValue, get, query, orderByChild, equalTo, onDisconnect, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // CONFIGURATION FIREBASE
+        // CONFIGURATION FIREBASE (REMETS TES CLÉS ICI)
         const firebaseConfig = {
             apiKey: "VOTRE_API_KEY",
             authDomain: "VOTRE_PROJECT.firebaseapp.com",
@@ -376,9 +376,13 @@
         }
 
         window.acceptInvite = async (fid) => {
-            await set(ref(db, `contacts/${myId}/${fid}`), { uid: fid });
-            await set(ref(db, `contacts/${fid}/${myId}`), { uid: myId });
-            await remove(ref(db, `requests/${myId}/${fid}`));
+            try {
+                await set(ref(db, `contacts/${myId}/${fid}`), { uid: fid });
+                await set(ref(db, `contacts/${fid}/${myId}`), { uid: myId });
+                await remove(ref(db, `requests/${myId}/${fid}`));
+            } catch (err) {
+                console.error("Erreur lors de l'acceptation :", err);
+            }
         };
 
         window.sendMessage = () => {
