@@ -142,16 +142,21 @@
             </div>
         </div>
 
-        <div id="addModal" class="overlay-full hidden">
-            <div class="auth-card">
-                <h2 style="margin-bottom:12px; font-size:18px;">Ajouter un ami</h2>
-                <h3 style="margin-bottom:12px; font-size:18px;">Notre application ne permet pas encore cette fonction. Pour ajouter un ami, rendez-vous sur notre site ou demandez à votre ami de vous faire une demande. Vous pouvez toujours recevoir les demandes depuis l'application.</h3>
-                <a href="https://bp-contact.github.io/home" id="sendInviteBtn" style="width:100%; margin-top:14px; padding:12px; background:var(--accent); color:white; border:none; border-radius:12px; font-weight:bold; font-size:14px;">Aller sur le site</a>
-                <button onclick="document.getElementById('addModal').classList.add('hidden')" style="background:none; border:none; color:var(--text-muted); margin-top:12px; cursor:pointer; font-size:13px;">Retour</button>
-            </div>
+<div id="addModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Ajouter un ami</h3>
+            <span class="close-btn" onclick="closeAddModal()">&times;</span>
         </div>
+        <div class="modal-body">
+            <input type="email" id="friendEmail" placeholder="Ex: ami@email.com" />
+            <button id="sendInviteBtn">Envoyer la demande</button>
+        </div>
+    </div>
+</div>
 
-        <div class="side-panels" id="sidePanels">
+ 
+            <div class="side-panels" id="sidePanels">
             <nav class="contacts-bar">
                 <div class="bp-logo" onclick="showHome()">BP</div>
                 <div id="iconsList" style="display:contents;"></div>
@@ -678,24 +683,55 @@
             signInWithEmailAndPassword(auth, e, p).catch(err => alert("Erreur de connexion : " + err.message));
         };
 
-        document.getElementById('sendInviteBtn').onclick = async () => {
-            const email = document.getElementById('friendEmail').value.trim().toLowerCase();
-            const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
-            const snap = await get(q);
-            if(snap.exists()){
-                const tid = Object.keys(snap.val())[0];
-                const me = await get(ref(db, `users/${myId}`));
-                await set(ref(db, `requests/${tid}/${myId}`), { fromUid: myId, fromName: me.val().displayName });
-                alert("Demande envoyée !"); document.getElementById('addModal').classList.add('hidden');
-            } else alert("Utilisateur non trouvé.");
-        };
+document.getElementById('sendInviteBtn').onclick = async (e) => {
+    if (e) e.preventDefault(); // Empêche le rechargement de la page si c'est un <form>
+    
+    const emailInput = document.getElementById('friendEmail');
+    if (!emailInput) return alert("Champ email introuvable dans le HTML.");
 
-        window.showCtx = (e, mid, isMe, text) => { 
-            e.preventDefault(); 
-            selectedMsgId = mid; 
-            selectedMsgText = text;
+    const email = emailInput.value.trim().toLowerCase();
+    if (!email) return alert("Veuillez entrer un email.");
 
-            const m = document.getElementById('ctxMenu'); 
+    try {
+        // 1. Recherche de l'utilisateur par email
+        const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
+        const snap = await get(q);
+
+        if (!snap.exists()) {
+            return alert("Aucun utilisateur trouvé avec cet email.");
+        }
+
+        // Récupère l'UID trouvé
+        const usersObj = snap.val();
+        const friendUid = Object.keys(usersObj)[0];
+
+        if (friendUid === myId) {
+            return alert("Vous ne pouvez pas vous ajouter vous-même !");
+        }
+
+        // 2. Récupère le nom de l'expéditeur
+        const meSnap = await get(ref(db, `users/${myId}`));
+        const myData = meSnap.val() || {};
+        const myName = myData.displayName || "Un utilisateur";
+
+        // 3. Envoie la demande
+        await set(ref(db, `requests/${friendUid}/${myId}`), { 
+            fromUid: myId, 
+            fromName: myName 
+        });
+
+        alert("Demande envoyée avec succès !");
+        const modal = document.getElementById('addModal');
+        if (modal) modal.classList.add('hidden');
+        emailInput.value = "";
+
+    } catch (err) {
+        console.error("Erreur d'envoi :", err);
+        alert("Erreur : " + err.message);
+    }
+};
+
+document.getElementById('ctxMenu'); 
             
             document.getElementById('ctxEdit').style.display = isMe ? 'flex' : 'none';
             document.getElementById('ctxDelete').style.display = isMe ? 'flex' : 'none';
