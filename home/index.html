@@ -138,7 +138,7 @@
                 <div class="sidebar-header"><span>Demandes</span></div>
                 <div id="requestsList"></div>
                 <div style="flex:1;"></div>
-                <a href="intent://#Intent;package=eu.blocplaystudios.bpcontact;scheme=https;S.browser_fallback_url=https%3A%2F%2Fbp-contact.github.io%2Fdownload%2FBlocPlay%2520Contact.apk;end;" style="padding:15px; color:var(--accent); text-decoration:none; font-weight:bold; display:block;">Application</a>
+                <a id="androidAppBtn" href="intent://#Intent;package=eu.blocplaystudios.bpcontact;scheme=https;S.browser_fallback_url=https%3A%2F%2Fvotre-site.github.io%2Fdownload%2FBlocPlay%2520Contact.apk;end;" style="padding:15px; color:var(--accent); text-decoration:none; font-weight:bold; display:none;">Application</a>
                 <button id="logoutBtn" style="padding:15px; background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold; text-align:left;">Déconnexion</button>
             </aside>
         </div>
@@ -159,6 +159,11 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove, update, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Afficher le bouton uniquement si l'appareil est sous Android
+        if (/Android/i.test(navigator.userAgent)) {
+            document.getElementById('androidAppBtn').style.display = 'block';
+        }
 
         const firebaseConfig = {
             apiKey: "AIzaSyAQHLAG_Dvnc-a8LDJ__05oRwMmEtUkn04",
