@@ -589,7 +589,22 @@ window.popupVersion = () => {
             if (user) {
                 myId = user.uid;
                 const uRef = ref(db, `users/${myId}`);
-                await update(uRef, { uid: myId, email: user.email.toLowerCase(), displayName: user.email.split('@')[0], status: "online" });
+                
+                // 1. On va chercher les données existantes pour voir si l'utilisateur a déjà un pseudo enregistré
+                const snapshot = await get(uRef);
+                const existingData = snapshot.exists() ? snapshot.val() : {};
+                
+                // 2. On garde le pseudo existant, SINON on prend celui de Google, SINON on coupe l'email
+                const pseudo = existingData.displayName || user.displayName || user.email.split('@')[0];
+
+                // 3. On met à jour sans écraser le pseudo
+                await update(uRef, { 
+                    uid: myId, 
+                    email: user.email.toLowerCase(), 
+                    displayName: pseudo, 
+                    status: "online" 
+                });
+                
                 onDisconnect(uRef).update({ status: "offline" });
                 document.getElementById('loginOverlay').classList.add('hidden');
                 loadContacts(); loadRequests();
