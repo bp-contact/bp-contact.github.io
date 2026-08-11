@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BlocPlay | Mobile App</title>
+    <title>BlocPlay Chat</title>
     <style>
         :root {
             --bg-main: #0f1012;
@@ -217,7 +217,7 @@
                     <div id="emojiPicker" onclick="event.stopPropagation()">
                         <div id="emojiGrid"></div>
                         <div class="emoji-search-bar">
-                            <input type="text" id="emojiSearch" placeholder="Rechercher un émoji (ex: cœur, rire, feu, chat, café)..." oninput="filterEmojis(this.value)">
+                            <input type="text" id="emojiSearch" placeholder="Rechercher un émoji..." oninput="filterEmojis(this.value)">
                         </div>
                     </div>
 
@@ -243,7 +243,22 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, get, query, orderByChild, equalTo, remove, update, onDisconnect, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { 
+            getDatabase, 
+            ref, 
+            set, 
+            push, 
+            onValue, 
+            get, 
+            query, 
+            orderByChild, 
+            equalTo, 
+            remove, 
+            update, 
+            onDisconnect, 
+            limitToLast, 
+            onChildAdded 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -258,14 +273,18 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const auth = getAuth(app);
-        let myId = null, activeChatId = null, contactsData = [], selectedMsgId = null, selectedMsgText = "";
+        window.auth = getAuth(app);
+
+        let myId = null;
+        let activeChatId = null;
+        let contactsData = [];
+        let selectedMsgId = null;
+        let selectedMsgText = "";
         const activeListeners = new Set();
         let notificationsHistory = [];
 
-        // Émojis enrichis avec plus de 180 options et mots-clés en Français
+        // --- Liste des émojis ---
         const emojiList = [
-            // Visages & Émotions
             { e: "😀", k: "sourire content heureuse joie visage" },
             { e: "😃", k: "sourire content heureux rire visage" },
             { e: "😄", k: "sourire content heureux rire yeux" },
@@ -360,8 +379,6 @@
             { e: "👻", k: "fantôme peur halloween" },
             { e: "👽", k: "alien etranger espace" },
             { e: "🤖", k: "robot tech bot" },
-
-            // Gestes & Mains
             { e: "👋", k: "salut coucou main revoir" },
             { e: "🤚", k: "main levee stop" },
             { e: "🖐️", k: "main doigts cartes" },
@@ -394,8 +411,6 @@
             { e: "👀", k: "yeux regarder vu mate" },
             { e: "🧠", k: "cerveau intelligent brain" },
             { e: "💋", k: "bisou levres rouge" },
-
-            // Cœurs & Passion
             { e: "❤️", k: "coeur rouge amour love passion" },
             { e: "🧡", k: "coeur orange" },
             { e: "💛", k: "coeur jaune amitie" },
@@ -417,8 +432,6 @@
             { e: "✨", k: "etoiles etincelles magie brillant" },
             { e: "🌟", k: "etoile brillante" },
             { e: "💯", k: "100 cent parfait note" },
-
-            // Animaux & Nature
             { e: "🐶", k: "chien toutou animal" },
             { e: "🐱", k: "chat minou animal" },
             { e: "🐭", k: "souris animal" },
@@ -434,8 +447,6 @@
             { e: "🍀", k: "trefle chance vert" },
             { e: "🌹", k: "rose fleur amour" },
             { e: "🌻", k: "tournesol fleur" },
-
-            // Nourriture & Boisson
             { e: "🍕", k: "pizza fromage miam" },
             { e: "🍔", k: "burger hamburger fastfood" },
             { e: "🍟", k: "frites fastfood" },
@@ -449,8 +460,6 @@
             { e: "🧃", k: "jus boisson paille" },
             { e: "🍺", k: "biere apéro boisson" },
             { e: "🍻", k: "bieres tchin apero" },
-
-            // Sports & Gaming
             { e: "⚽", k: "foot ballon football sport" },
             { e: "🏀", k: "basket ballon sport" },
             { e: "🏈", k: "football americain sport" },
@@ -462,8 +471,6 @@
             { e: "🎧", k: "casque musique ecouter audio" },
             { e: "🎸", k: "guitare musique rock" },
             { e: "🎤", k: "micro chanter musique" },
-
-            // Objets & Symboles
             { e: "🚀", k: "fusee espace decollage rapide" },
             { e: "👑", k: "couronne roi reine prince queen" },
             { e: "💎", k: "diamant bijou riche" },
@@ -514,10 +521,11 @@
             }
         };
 
-window.popupVersion = () => {
-    alert("Version 1.0\nPour vérifier si l'application est à jour, videz le cache de l'application.");
-};
+        window.popupVersion = () => {
+            alert("Version 1.0\nPour vérifier si l'application est à jour, videz le cache de l'application.");
+        };
 
+        // --- Notifications ---
         window.openNotifModal = () => {
             document.getElementById('notifModal').classList.remove('hidden');
             updateNotifModalContent();
@@ -530,7 +538,7 @@ window.popupVersion = () => {
             if (!("Notification" in window) || Notification.permission !== "granted") {
                 statusSec.innerHTML = `
                     <div style="background: rgba(237, 66, 69, 0.15); border: 1px solid rgba(237, 66, 69, 0.3); padding: 12px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px;">
-                        <span style="color: var(--danger); font-size: 13px; font-weight: 600;">Les notifications sont désactivés</span>
+                        <span style="color: var(--danger); font-size: 13px; font-weight: 600;">Les notifications sont désactivées</span>
                         <button onclick="requestNotificationPermissionAndRefresh()" style="padding: 8px 12px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px;">Activer les notifications</button>
                     </div>
                 `;
@@ -562,11 +570,11 @@ window.popupVersion = () => {
 
         window.requestNotificationPermissionAndRefresh = () => {
             if ("Notification" in window) {
-                Notification.requestPermission().then(permission => {
+                Notification.requestPermission().then(() => {
                     updateNotifModalContent();
                 });
             } else {
-                alert("Cette fonction est en création, veuillez patienter.");
+                alert("Cette fonction n'est pas supportée sur ce navigateur.");
             }
         };
 
@@ -585,65 +593,6 @@ window.popupVersion = () => {
             }
         }
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                myId = user.uid;
-                const uRef = ref(db, `users/${myId}`);
-                
-                // 1. On va chercher les données existantes pour voir si l'utilisateur a déjà un pseudo enregistré
-                const snapshot = await get(uRef);
-                const existingData = snapshot.exists() ? snapshot.val() : {};
-                
-                // 2. On garde le pseudo existant, SINON on prend celui de Google, SINON on coupe l'email
-                const pseudo = existingData.displayName || user.displayName || user.email.split('@')[0];
-
-                // 3. On met à jour sans écraser le pseudo
-                await update(uRef, { 
-                    uid: myId, 
-                    email: user.email.toLowerCase(), 
-                    displayName: pseudo, 
-                    status: "online" 
-                });
-                
-                onDisconnect(uRef).update({ status: "offline" });
-                document.getElementById('loginOverlay').classList.add('hidden');
-                loadContacts(); loadRequests();
-            } else { 
-                document.getElementById('loginOverlay').classList.remove('hidden'); 
-            }
-        });
-
-        window.toggleMenu = () => document.getElementById('sidePanels').classList.toggle('open');
-        window.showHome = () => {
-            document.getElementById('homePage').style.display = 'flex';
-            document.getElementById('chatPage').style.display = 'none';
-            document.getElementById('seeMoreOverlay').style.display = 'none';
-            document.getElementById('sidePanels').classList.remove('open');
-            activeChatId = null;
-        };
-
-        function loadContacts() {
-            onValue(ref(db, `contacts/${myId}`), (snap) => {
-                const iList = document.getElementById('iconsList'); iList.innerHTML = "";
-                contactsData = [];
-                snap.forEach(c => {
-                    const fid = c.val().uid;
-                    onValue(ref(db, `users/${fid}`), (uSnap) => {
-                        const data = uSnap.val(); if(!data) return;
-                        contactsData = contactsData.filter(u => u.uid !== fid);
-                        contactsData.push(data);
-                        
-                        const icon = document.createElement('div');
-                        icon.className = "contact-circle"; icon.innerText = data.displayName[0];
-                        icon.onclick = () => openChat(fid, data.displayName);
-                        iList.appendChild(icon);
-                        refreshDashboard();
-                        listenForNotifications(fid, data.displayName);
-                    });
-                });
-            });
-        }
-
         function listenForNotifications(friendId, friendName) {
             const ids = [myId, friendId].sort();
             const chatId = ids[0] + "_" + ids[1];
@@ -654,16 +603,85 @@ window.popupVersion = () => {
             let initialLoad = true;
             const chatRef = query(ref(db, `chats/${chatId}`), limitToLast(1));
             
-            onValue(chatRef, (snap) => {
+            onChildAdded(chatRef, (snapshot) => {
                 if (initialLoad) {
                     initialLoad = false;
                     return;
                 }
-                snap.forEach(m => {
-                    const msg = m.val();
-                    if (msg.authorUid !== myId && (activeChatId !== chatId || document.hidden)) {
-                        triggerNotification(friendName, msg.text);
-                    }
+
+                const msg = snapshot.val();
+                if (msg.authorUid !== myId && (activeChatId !== chatId || document.hidden)) {
+                    triggerNotification(friendName, msg.text);
+                }
+            });
+        }
+
+        // --- Authentification ---
+        onAuthStateChanged(window.auth, async (user) => {
+            if (user) {
+                myId = user.uid;
+
+                if ("Notification" in window && Notification.permission === "default") {
+                    Notification.requestPermission();
+                }
+
+                const uRef = ref(db, `users/${myId}`);
+                const snapshot = await get(uRef);
+                const existingData = snapshot.exists() ? snapshot.val() : {};
+                const pseudo = existingData.displayName || user.displayName || user.email.split('@')[0];
+
+                await update(uRef, { 
+                    uid: myId, 
+                    email: user.email.toLowerCase(), 
+                    displayName: pseudo, 
+                    status: "online" 
+                });
+                
+                onDisconnect(uRef).update({ status: "offline" });
+                document.getElementById('loginOverlay').classList.add('hidden');
+                loadContacts(); 
+                loadRequests();
+            } else { 
+                document.getElementById('loginOverlay').classList.remove('hidden'); 
+            }
+        });
+
+        // --- Navigation ---
+        window.toggleMenu = () => document.getElementById('sidePanels').classList.toggle('open');
+        
+        window.showHome = () => {
+            document.getElementById('homePage').style.display = 'flex';
+            document.getElementById('chatPage').style.display = 'none';
+            document.getElementById('seeMoreOverlay').style.display = 'none';
+            document.getElementById('sidePanels').classList.remove('open');
+            activeChatId = null;
+        };
+
+        // --- Contacts ---
+        function loadContacts() {
+            onValue(ref(db, `contacts/${myId}`), (snap) => {
+                const iList = document.getElementById('iconsList'); 
+                iList.innerHTML = "";
+                contactsData = [];
+
+                snap.forEach(c => {
+                    const fid = c.val().uid;
+                    onValue(ref(db, `users/${fid}`), (uSnap) => {
+                        const data = uSnap.val(); 
+                        if (!data) return;
+                        
+                        contactsData = contactsData.filter(u => u.uid !== fid);
+                        contactsData.push(data);
+                        
+                        const icon = document.createElement('div');
+                        icon.className = "contact-circle"; 
+                        icon.innerText = data.displayName[0];
+                        icon.onclick = () => openChat(fid, data.displayName);
+                        iList.appendChild(icon);
+                        
+                        refreshDashboard();
+                        listenForNotifications(fid, data.displayName);
+                    });
                 });
             });
         }
@@ -671,17 +689,25 @@ window.popupVersion = () => {
         function refreshDashboard() {
             const onArr = contactsData.filter(u => u.status === 'online');
             const offArr = contactsData.filter(u => u.status === 'offline');
+            
             document.getElementById('onLabel').innerText = `En ligne (${onArr.length}) :`;
             document.getElementById('offLabel').innerText = `Hors ligne (${offArr.length}) :`;
 
-            const cardHtml = (u) => `<div class="contact-card" onclick="openChat('${u.uid}', '${u.displayName}')"><div class="user-icon-wrap">${u.displayName[0]}<div class="status-dot ${u.status}"></div></div><div class="user-name-big">${u.displayName}</div></div>`;
+            const cardHtml = (u) => `
+                <div class="contact-card" onclick="openChat('${u.uid}', '${u.displayName}')">
+                    <div class="user-icon-wrap">${u.displayName[0]}<div class="status-dot ${u.status}"></div></div>
+                    <div class="user-name-big">${u.displayName}</div>
+                </div>`;
+
             document.getElementById('onPreview').innerHTML = onArr.length ? cardHtml(onArr[0]) : "";
             document.getElementById('offPreview').innerHTML = offArr.length ? cardHtml(offArr[0]) : "";
         }
 
+        // --- Chat ---
         window.openChat = (fid, fname) => {
             const ids = [myId, fid].sort();
             activeChatId = ids[0] + "_" + ids[1];
+            
             document.getElementById('chatTitle').innerText = fname;
             document.getElementById('homePage').style.display = 'none';
             document.getElementById('chatPage').style.display = 'flex';
@@ -689,25 +715,27 @@ window.popupVersion = () => {
             document.getElementById('sidePanels').classList.remove('open');
             
             onValue(ref(db, `chats/${activeChatId}`), (snap) => {
-                const mDiv = document.getElementById('messages'); mDiv.innerHTML = "";
+                const mDiv = document.getElementById('messages'); 
+                mDiv.innerHTML = "";
+
                 snap.forEach(m => {
                     const val = m.val();
                     const isMe = val.authorUid === myId;
                     const wrap = document.createElement('div');
-                    wrap.style = `display:flex; flex-direction:column; max-width:100%; align-self:${isMe?'flex-end':'flex-start'}; align-items:${isMe?'flex-end':'flex-start'}`;
+                    wrap.style = `display:flex; flex-direction:column; max-width:100%; align-self:${isMe ? 'flex-end' : 'flex-start'}; align-items:${isMe ? 'flex-end' : 'flex-start'}`;
                     
                     let reactionsHtml = "";
                     if (val.reactions) {
                         const counts = {};
                         Object.values(val.reactions).forEach(r => counts[r] = (counts[r] || 0) + 1);
-                        const badges = Object.entries(counts).map(([r, c]) => `${r}${c > 1 ? ' '+c : ''}`).join(' ');
-                        reactionsHtml = `<div style="font-size:12px; background:#18191c; border-radius:12px; padding:2px 8px; margin-top:-6px; z-index:2; border:1px solid rgba(255,255,255,0.12); box-shadow:0 2px 6px rgba(0,0,0,0.3); align-self:${isMe?'flex-end':'flex-start'}">${badges}</div>`;
+                        const badges = Object.entries(counts).map(([r, c]) => `${r}${c > 1 ? ' ' + c : ''}`).join(' ');
+                        reactionsHtml = `<div style="font-size:12px; background:#18191c; border-radius:12px; padding:2px 8px; margin-top:-6px; z-index:2; border:1px solid rgba(255,255,255,0.12); box-shadow:0 2px 6px rgba(0,0,0,0.3); align-self:${isMe ? 'flex-end' : 'flex-start'}">${badges}</div>`;
                     }
 
                     const safeText = (val.text || "").replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                     wrap.innerHTML = `
-                        <div class="bubble" oncontextmenu="showCtx(event, '${m.key}', ${isMe}, '${safeText}')" style="background:${isMe?'var(--msg-me)':'var(--msg-friend)'}; border-radius:18px; border-bottom-${isMe?'right':'left'}-radius:4px;">
+                        <div class="bubble" oncontextmenu="showCtx(event, '${m.key}', ${isMe}, '${safeText}')" style="background:${isMe ? 'var(--msg-me)' : 'var(--msg-friend)'}; border-radius:18px; border-bottom-${isMe ? 'right' : 'left'}-radius:4px;">
                             ${val.text}
                         </div>
                         ${reactionsHtml}
@@ -718,21 +746,44 @@ window.popupVersion = () => {
             });
         };
 
+        window.sendMessage = () => {
+            const val = document.getElementById('userInput').value.trim();
+            if (val && activeChatId) {
+                push(ref(db, `chats/${activeChatId}`), { authorUid: myId, text: val });
+            }
+            document.getElementById('userInput').value = "";
+            if (typeof hideEmojiPicker === "function") hideEmojiPicker();
+        };
+
+        // --- Modales Amis ---
         window.openSeeMore = (type) => {
-            const grid = document.getElementById('seeMoreGrid'); grid.innerHTML = "";
+            const grid = document.getElementById('seeMoreGrid'); 
+            grid.innerHTML = "";
             document.getElementById('seeMoreOverlay').style.display = 'flex';
             document.getElementById('seeMoreTitle').innerText = type === 'online' ? "Amis en ligne" : "Amis hors ligne";
+            
             contactsData.filter(c => c.status === type).forEach(c => {
-                grid.innerHTML += `<div class="contact-card" onclick="openChat('${c.uid}', '${c.displayName}')"><div class="user-icon-wrap">${c.displayName[0]}<div class="status-dot ${c.status}"></div></div><div class="user-name-big">${c.displayName}</div></div>`;
+                grid.innerHTML += `
+                    <div class="contact-card" onclick="openChat('${c.uid}', '${c.displayName}')">
+                        <div class="user-icon-wrap">${c.displayName[0]}<div class="status-dot ${c.status}"></div></div>
+                        <div class="user-name-big">${c.displayName}</div>
+                    </div>`;
             });
         };
+
         window.closeSeeMore = () => document.getElementById('seeMoreOverlay').style.display = 'none';
 
+        // --- Requêtes ---
         function loadRequests() {
             onValue(ref(db, `requests/${myId}`), (snap) => {
-                const rList = document.getElementById('requestsList'); rList.innerHTML = "";
+                const rList = document.getElementById('requestsList'); 
+                rList.innerHTML = "";
                 snap.forEach(c => {
-                    rList.innerHTML += `<div style="padding:10px; background:#2b2d31; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:13px;"><span>${c.val().fromName}</span><button onclick="acceptInvite('${c.key}')" style="background:var(--online); color:white; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-weight:bold;">OK</button></div>`;
+                    rList.innerHTML += `
+                        <div style="padding:10px; background:#2b2d31; border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:13px;">
+                            <span>${c.val().fromName}</span>
+                            <button onclick="acceptInvite('${c.key}')" style="background:var(--online); color:white; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-weight:bold;">OK</button>
+                        </div>`;
                 });
             });
         }
@@ -743,32 +794,31 @@ window.popupVersion = () => {
             await remove(ref(db, `requests/${myId}/${fid}`));
         };
 
-        window.sendMessage = () => {
-            const val = document.getElementById('userInput').value.trim();
-            if(val && activeChatId) push(ref(db, `chats/${activeChatId}`), { authorUid: myId, text: val });
-            document.getElementById('userInput').value = "";
-            hideEmojiPicker();
-        };
-
+        // --- Event Listeners Boutons ---
         document.getElementById('loginBtn').onclick = () => {
             const e = document.getElementById('email').value.trim();
             const p = document.getElementById('pass').value;
-            if(!e || !p) return alert("Veuillez remplir tous les champs.");
-            signInWithEmailAndPassword(auth, e, p).catch(err => alert("Erreur de connexion : " + err.message));
+            if (!e || !p) return alert("Veuillez remplir tous les champs.");
+            signInWithEmailAndPassword(window.auth, e, p).catch(err => alert("Erreur de connexion : " + err.message));
         };
 
         document.getElementById('sendInviteBtn').onclick = async () => {
             const email = document.getElementById('friendEmail').value.trim().toLowerCase();
             const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
             const snap = await get(q);
-            if(snap.exists()){
+            
+            if (snap.exists()) {
                 const tid = Object.keys(snap.val())[0];
                 const me = await get(ref(db, `users/${myId}`));
                 await set(ref(db, `requests/${tid}/${myId}`), { fromUid: myId, fromName: me.val().displayName });
-                alert("Demande envoyée !"); document.getElementById('addModal').classList.add('hidden');
-            } else alert("Utilisateur non trouvé.");
+                alert("Demande envoyée !"); 
+                document.getElementById('addModal').classList.add('hidden');
+            } else {
+                alert("Utilisateur non trouvé.");
+            }
         };
 
+        // --- Context Menu ---
         window.showCtx = (e, mid, isMe, text) => { 
             e.preventDefault(); 
             selectedMsgId = mid; 
@@ -787,12 +837,8 @@ window.popupVersion = () => {
             let posX = e.clientX;
             let posY = e.clientY;
 
-            if (posX + menuWidth > window.innerWidth) {
-                posX = window.innerWidth - menuWidth - 10;
-            }
-            if (posY + menuHeight > window.innerHeight) {
-                posY = window.innerHeight - menuHeight - 10;
-            }
+            if (posX + menuWidth > window.innerWidth) posX = window.innerWidth - menuWidth - 10;
+            if (posY + menuHeight > window.innerHeight) posY = window.innerHeight - menuHeight - 10;
             if (posX < 10) posX = 10;
             if (posY < 10) posY = 10;
 
@@ -820,7 +866,7 @@ window.popupVersion = () => {
         
         window.editMsg = () => { 
             const t = prompt("Nouveau message :", selectedMsgText); 
-            if(t) update(ref(db, `chats/${activeChatId}/${selectedMsgId}`), { text: t + " (modifié)" }); 
+            if (t) update(ref(db, `chats/${activeChatId}/${selectedMsgId}`), { text: t + " (modifié)" }); 
         };
     </script>
 </body>
